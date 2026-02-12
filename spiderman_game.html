@@ -1,0 +1,56 @@
+// Spider-Man Maze Game
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: { gravity: { y: 0 } }
+    },
+    scene: { preload: preload, create: create, update: update }
+};
+
+function preload() {
+    // Load your custom assets here
+    this.load.image('spiderman', 'assets/spiderman.png');
+    this.load.image('kingpin', 'assets/kingpin.png');
+    this.load.image('goblin', 'assets/goblin.png');
+    this.load.image('doc-ock', 'assets/doc-ock.png');
+    this.load.image('venom', 'assets/venom.png');
+    this.load.image('web-pellet', 'assets/web.png'); 
+}
+
+function create() {
+    // 1. Create the Maze (can use a Tilemap or simple physics groups)
+    // 2. Add Spiderman
+    this.player = this.physics.add.sprite(400, 300, 'spiderman');
+    
+    // 3. Add Villains
+    this.villains = this.physics.add.group();
+    let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
+    
+    villainsList.forEach((key, index) => {
+        let v = this.villains.create(100 * (index + 1), 100, key);
+        v.setCollideWorldBounds(true);
+        v.setBounce(1);
+        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
+    });
+
+    // 4. Overlap/Collision Logic
+    this.physics.add.overlap(this.player, this.villains, gameOver, null, this);
+}
+
+function update() {
+    // Handle movement (Arrow Keys)
+    let cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown) this.player.setVelocityX(-160);
+    else if (cursors.right.isDown) this.player.setVelocityX(160);
+}
+
+function gameOver() {
+    this.physics.pause();
+    alert("Captured by the Sinister Four!");
+    location.reload();
+}
+
+new Phaser.Game(config);
