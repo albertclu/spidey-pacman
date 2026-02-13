@@ -22,7 +22,7 @@
 <div id="game-container">
     <div id="start-screen" class="ui-screen">
         <h1 style="color:#e23636;">SPIDERMAN GAME</h1>
-        <p>Avoid all the villains and collect the webs!<br>Use arrow keys to move.</p>
+        <p>Collect all the yellow dots and avoid the villains!<br>Use arrow keys to move.</p>
         <button onclick="startGame()">PLAY GAME</button>
     </div>
     <div id="game-over-screen" class="ui-screen hidden">
@@ -144,18 +144,12 @@ function create() {
     // ── Draw walls and webs ────────────────────────────────────────────────
     this.webMap = {}; // key "col,row" -> Phaser Image
 
-    // Build a neon glow texture: bright core + soft outer rings
+    // Simple bright yellow dot like Pac-Man pellets
     if (!this.textures.exists('web')) {
         const g = this.add.graphics();
-        // Outer soft glow
-        g.fillStyle(0x00ffff, 0.15); g.fillCircle(12, 12, 12);
-        g.fillStyle(0x00ffff, 0.25); g.fillCircle(12, 12, 9);
-        g.fillStyle(0x00ffff, 0.45); g.fillCircle(12, 12, 6);
-        // Bright core
-        g.fillStyle(0x00ffff, 1.0);  g.fillCircle(12, 12, 3);
-        // White hot centre
-        g.fillStyle(0xffffff, 1.0);  g.fillCircle(12, 12, 1.5);
-        g.generateTexture('web', 24, 24);
+        g.fillStyle(0xffee00, 1.0);
+        g.fillCircle(6, 6, 6);
+        g.generateTexture('web', 12, 12);
         g.destroy();
     }
 
@@ -165,7 +159,7 @@ function create() {
             if (cell === 1) {
                 this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
             } else {
-                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(24, 24);
+                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(12, 12);
                 this.webMap[`${cx},${ry}`] = w;
             }
         });
