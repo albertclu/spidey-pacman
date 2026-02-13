@@ -81,6 +81,7 @@ function preload() {
 
 function create() {
     this.physics.pause(); 
+    
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
@@ -97,18 +98,27 @@ function create() {
         });
     });
 
-    // SPAWN SPIDERMAN (Exactly centered in a Row 17 path)
-    this.player = this.physics.add.sprite(380, 660, 'spiderman').setDisplaySize(32, 32);
+    // SPAWN SPIDERMAN: Moved to the very bottom-center path (Row 17)
+    // x = 380, y = 700 is a safe '0' spot in the layout
+    this.player = this.physics.add.sprite(380, 700, 'spiderman').setDisplaySize(30, 30);
     this.player.setCollideWorldBounds(true);
+    this.player.body.setSize(20, 20); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
     villainsList.forEach((key, index) => {
         let v = this.villains.create(100 + (index * 150), 60, key).setDisplaySize(32, 32);
-        v.setCollideWorldBounds(true);
-        // Custom property to help with AI timing
-        v.lastTurn = 0;
+        v.setBounce(1).setCollideWorldBounds(true);
+        v.body.setSize(22, 22);
+        
+        // NO MORE DIAGONALS: 
+        // We pick EITHER X or Y to be 0 so they move straight
+        if (index % 2 === 0) {
+            v.setVelocity(150, 0); // Move Left/Right only
+        } else {
+            v.setVelocity(0, 150); // Move Up/Down only
+        }
     });
 
     this.physics.add.collider(this.player, this.walls);
@@ -120,46 +130,15 @@ function create() {
     highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 }
 
-function changeDirection(villain, wall) {
-    // Pick a random direction: 0: Left, 1: Right, 2: Up, 3: Down
-    let dir = Phaser.Math.Between(0, 3);
-    let speed = 150;
-
-    if (dir === 0) villain.setVelocity(-speed, 0);
-    else if (dir === 1) villain.setVelocity(speed, 0);
-    else if (dir === 2) villain.setVelocity(0, -speed);
-    else if (dir === 3) villain.setVelocity(0, speed);
-}
-
-function update(time) {
+function update() {
     let cursors = this.input.keyboard.createCursorKeys();
-    let speed = 160;
-
-    // 1. Spiderman Movement: Snap to Grid
     this.player.setVelocity(0);
-    if (cursors.left.isDown) this.player.setVelocityX(-speed);
-    else if (cursors.right.isDown) this.player.setVelocityX(speed);
-    else if (cursors.up.isDown) this.player.setVelocityY(-speed);
-    else if (cursors.down.isDown) this.player.setVelocityY(speed);
-
-    // 2. Villain Chasing AI
-    this.villains.getChildren().forEach((v) => {
-        // Only change direction if they aren't moving or every 500ms
-        if (v.body.velocity.x === 0 && v.body.velocity.y === 0 || time > v.lastTurn) {
-            let diffX = this.player.x - v.x;
-            let diffY = this.player.y - v.y;
-
-            // Simple AI: Move toward Spiderman's larger distance
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-                v.setVelocity(diffX > 0 ? 120 : -120, 0);
-            } else {
-                v.setVelocity(0, diffY > 0 ? 120 : -120);
-            }
-            v.lastTurn = time + 500; // Wait 0.5 seconds before re-calculating
-        }
-    });
+    if (cursors.left.isDown) this.player.setVelocityX(-180);
+    else if (cursors.right.isDown) this.player.setVelocityX(180);
+    if (cursors.up.isDown) this.player.setVelocityY(-180);
+    else if (cursors.down.isDown) this.player.setVelocityY(180);
 }
-    
+
 function collectWeb(player, web) {
     web.disableBody(true, true);
     score += 10;
@@ -185,8 +164,6 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
-
-
 
 
 
