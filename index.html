@@ -40,16 +40,10 @@ let highScoreText;
 
 const config = {
     type: Phaser.AUTO,
-    width: 800, 
-    height: 600,
+    width: 760,  // 19 columns * 40px
+    height: 800, // 20 rows * 40px
     parent: 'game-container',
-    physics: { 
-        default: 'arcade', 
-        arcade: { 
-            gravity: { y: 0 },
-            debug: false // Set to true if you want to see the "hitboxes"
-        } 
-    },
+    physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
     scene: { preload: preload, create: create, update: update }
 };
 
@@ -76,55 +70,44 @@ const mazeLayout = [
 ];
 
 function preload() {
-    // --- IMPORTANT: Ensure these names match your GitHub files exactly! ---
-    // If your folder is named "assets", these paths are correct.
-    this.load.image('spiderman', 'assets/spiderman.png');
-    this.load.image('kingpin', 'assets/kingpin.png');
-    this.load.image('goblin', 'assets/goblin.png');
-    this.load.image('doc-ock', 'assets/doc-ock.png');
-    this.load.image('venom', 'assets/venom.png');
-    this.load.image('wall', 'assets/wall.png'); 
-    this.load.image('web', 'assets/web.png'); 
+    this.load.image('spiderman', 'Assets/spiderman.png');
+    this.load.image('kingpin', 'Assets/kingpin.png');
+    this.load.image('goblin', 'Assets/goblin.png');
+    this.load.image('doc-ock', 'Assets/doc-ock.png');
+    this.load.image('venom', 'Assets/venom.png');
+    this.load.image('wall', 'Assets/wall.png'); 
+    this.load.image('web', 'Assets/web.png'); 
 }
 
 function create() {
-    this.physics.pause();
+    this.physics.pause(); // Wait for "Play Game" button
     
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
-    // WIDER GRID: We use 60px instead of 40px
-    const tileSize = 60;
-
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
-            let posX = x * tileSize + tileSize/2;
-            let posY = y * tileSize + tileSize/2;
-
             if (cell === 1) {
-                // Wall is 60x60
-                this.walls.create(posX, posY, 'wall').setDisplaySize(tileSize, tileSize).refreshBody();
+                this.walls.create(x * 40 + 20, y * 40 + 20, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
-                // Web is small (15x15) so it's easy to pick up
-                this.webs.create(posX, posY, 'web').setDisplaySize(20, 20);
+                this.webs.create(x * 40 + 20, y * 40 + 20, 'web').setDisplaySize(15, 15);
             }
         });
     });
 
-    // SPIDEY: We make him 30px so he has 30px of "extra space" in the 60px path
-    this.player = this.physics.add.sprite(90, 90, 'spiderman').setDisplaySize(35, 35);
+    this.player = this.physics.add.sprite(60, 60, 'spiderman').setDisplaySize(32, 32);
     this.player.setCollideWorldBounds(true);
-    // This makes the "hitbox" a bit smaller so he doesn't clip corners
-    this.player.body.setSize(25, 25);
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     villainsList.forEach((key, index) => {
-        let v = this.villains.create(300, 300, key).setDisplaySize(35, 35);
+        let v = this.villains.create(380, 400, key).setDisplaySize(32, 32);
         v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setSize(25, 25); // Smaller hitboxes prevent getting stuck
-        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
+        v.setVelocity(Phaser.Math.Between(-120, 120), Phaser.Math.Between(-120, 120));
     });
+
+    scoreText = this.add.text(20, 765, 'Score: 0', { fontSize: '20px', fill: '#fff' });
+    highScoreText = this.add.text(550, 765, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls);
@@ -166,6 +149,5 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
-
 
 
