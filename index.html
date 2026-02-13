@@ -157,12 +157,12 @@ function create() {
     });
 
     // ── Player ────────────────────────────────────────────────────────────
-    // Starts at an open cell: col=1, row=17
-    const sp = tpx(1, 17);
+    // Starts at center-bottom open cell: col=9, row=14 (verified open)
+    const sp = tpx(9, 14);
     this.player = {
         sprite:   this.add.image(sp.x, sp.y, 'spiderman').setDisplaySize(30, 30),
         x: sp.x, y: sp.y,
-        col: 1,  row: 17,
+        col: 9,  row: 14,
         dx: 0,   dy: 0,    // current movement direction (tiles/step)
         ndx: 0,  ndy: 0,   // buffered next direction
         progress: 0,        // 0..1 lerp between current tile and next tile
@@ -262,20 +262,47 @@ function playerNextDir(player) {
     return null; // wall ahead and no buffered turn — stop
 }
 
-// Villain: prefer straight, avoid reversing, randomise at junctions
-function villainNextDir(villain) {
-    const open = openDirs(villain.col, villain.row);
-    if (open.length === 0) return null;
+// BFS from (startCol, startRow) toward (targetCol, targetRow).
+// Returns the first step direction to take, or null if unreachable.
+function bfsNextDir(startCol, startRow, targetCol, targetRow) {
+    if (startCol === targetCol && startRow === targetRow) return null;
 
+    const visited = new Set();
+    const queue   = [{ col: startCol, row: startRow, firstDir: null }];
+    visited.add(`${startCol},${startRow}`);
+
+    while (queue.length > 0) {
+        const { col, row, firstDir } = queue.shift();
+
+        for (const d of ALL_DIRS) {
+            const nc  = col + d.dx;
+            const nr  = row + d.dy;
+            const key = `${nc},${nr}`;
+
+            if (isWall(nc, nr) || visited.has(key)) continue;
+            visited.add(key);
+
+            const step = firstDir || d; // remember the very first direction taken
+
+            if (nc === targetCol && nr === targetRow) return step;
+
+            queue.push({ col: nc, row: nr, firstDir: step });
+        }
+    }
+    return null; // no path found
+}
+
+// Villain: chase the player via BFS shortest path.
+// Falls back to random non-reverse if BFS fails.
+function villainNextDir(villain, playerCol, playerRow) {
+    const chase = bfsNextDir(villain.col, villain.row, playerCol, playerRow);
+    if (chase) return chase;
+
+    // Fallback (shouldn't normally trigger)
+    const open       = openDirs(villain.col, villain.row);
     const nonReverse = open.filter(d => !(d.dx === -villain.dx && d.dy === -villain.dy));
     const choices    = nonReverse.length > 0 ? nonReverse : open;
-
-    // Bias toward continuing straight through corridors
-    const straight = choices.find(d => d.dx === villain.dx && d.dy === villain.dy);
-    if (straight && choices.length === 1) return straight;
-    if (straight && Math.random() < 0.6)  return straight;
-
-    return choices[Math.floor(Math.random() * choices.length)];
+    return choices.length > 0 ? choices[Math.floor(Math.random() * choices.length)] : null;
 }
 
 // ─── UPDATE ───────────────────────────────────────────────────────────────────
@@ -324,13 +351,14 @@ function update(time, deltaMs) {
         }
     }
 
-    // ── Move villains ─────────────────────────────────────────────────────
+    // ── Move villains (chase player via BFS) ──────────────────────────────
+    const pCol = p.col, pRow = p.row;
     for (const v of this.villains) {
         if (!v.moving) {
-            const next = villainNextDir(v);
+            const next = villainNextDir(v, pCol, pRow);
             if (next) { v.dx = next.dx; v.dy = next.dy; v.moving = true; }
         }
-        advanceActor(v, VILLAIN_SPEED / T, delta, villainNextDir);
+        advanceActor(v, VILLAIN_SPEED / T, delta, (actor) => villainNextDir(actor, pCol, pRow));
     }
 
     // ── Collision: player vs villains ─────────────────────────────────────
