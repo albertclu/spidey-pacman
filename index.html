@@ -93,6 +93,7 @@ function create() {
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
+    // WIDER GRID: We use 60px instead of 40px
     const tileSize = 60;
 
     mazeLayout.forEach((row, y) => {
@@ -101,36 +102,14 @@ function create() {
             let posY = y * tileSize + tileSize/2;
 
             if (cell === 1) {
+                // Wall is 60x60
                 this.walls.create(posX, posY, 'wall').setDisplaySize(tileSize, tileSize).refreshBody();
             } else {
-                // BRIGHTER WEBS: We set alpha to 1 and add a white tint 
-                // to make sure they aren't shadowed
-                let web = this.webs.create(posX, posY, 'web').setDisplaySize(25, 25);
-                web.setAlpha(1); 
-                web.setTint(0xffffff); // Forces the image to its brightest white
+                // Web is small (15x15) so it's easy to pick up
+                this.webs.create(posX, posY, 'web').setDisplaySize(20, 20);
             }
         });
     });
-
-    // START SPIDEY AT CENTER-BOTTOM
-    // x = 300 (roughly middle of the width), y = 510 (bottom lane)
-    this.player = this.physics.add.sprite(300, 510, 'spiderman').setDisplaySize(35, 35);
-    this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(25, 25);
-
-    this.villains = this.physics.add.group();
-    let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
-    
-    // Spawn villains near the top so they have to travel toward Spidey
-    villainsList.forEach((key, index) => {
-        let v = this.villains.create(150 + (index * 100), 150, key).setDisplaySize(35, 35);
-        v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setSize(25, 25);
-        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
-    });
-
-    // ... (rest of your colliders and text)
-}
 
     // SPIDEY: We make him 30px so he has 30px of "extra space" in the 60px path
     this.player = this.physics.add.sprite(90, 90, 'spiderman').setDisplaySize(35, 35);
@@ -187,7 +166,6 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
-
 
 
 
