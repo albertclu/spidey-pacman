@@ -134,7 +134,7 @@ function create() {
 
     // Fallback coloured shapes when Asset images are missing
     ensureTexture(this, 'wall',      0x2244cc, T,  T);
-    ensureTexture(this, 'web',       0xffffff, 8,  8, true);
+    ensureTexture(this, 'web',       0xffff00, 10, 10, true);
     ensureTexture(this, 'spiderman', 0xe23636, 30, 30, true);
     ensureTexture(this, 'kingpin',   0xdddddd, 30, 30, true);
     ensureTexture(this, 'goblin',    0x00cc00, 30, 30, true);
@@ -150,7 +150,7 @@ function create() {
             if (cell === 1) {
                 this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
             } else {
-                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(8, 8);
+                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
                 this.webMap[`${cx},${ry}`] = w;
             }
         });
