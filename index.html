@@ -38,6 +38,9 @@ let highScore = localStorage.getItem('spideyHighScore') || 0;
 let scoreText;
 let highScoreText;
 
+const TILE_SIZE = 40;
+const OFFSET = 20;
+
 const config = {
     type: Phaser.AUTO,
     width: 760, 
@@ -89,62 +92,57 @@ function create() {
 
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
-            let px = x * 40 + 20;
-            let py = y * 40 + 20;
+            let px = x * TILE_SIZE + OFFSET;
+            let py = y * TILE_SIZE + OFFSET;
             if (cell === 1) {
-                this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
+                this.walls.create(px, py, 'wall').setDisplaySize(TILE_SIZE, TILE_SIZE).refreshBody();
             } else {
-                let w = this.webs.create(px, py, 'web').setDisplaySize(16, 16);
+                let w = this.webs.create(px, py, 'web').setDisplaySize(15, 15);
                 w.setTint(0xffffff); 
             }
         });
     });
 
-    // --- NEW AUTO-SAFE SPAWN LOGIC ---
-    let spawnX = 60; // Default fallback
-    let spawnY = 60;
-    let foundSafeSpot = false;
-
-    // We scan the maze from bottom to top to find the first '0'
-    for (let row = mazeLayout.length - 1; row >= 0; row--) {
-        for (let col = 0; col < mazeLayout[row].length; col++) {
-            if (mazeLayout[row][col] === 0) {
-                spawnX = col * 40 + 20;
-                spawnY = row * 40 + 20;
-                foundSafeSpot = true;
-                break;
-            }
-        }
-        if (foundSafeSpot) break;
-    }
-
-    this.player = this.physics.add.sprite(spawnX, spawnY, 'spiderman').setDisplaySize(32, 32);
+    // START SPIDEY: Bottom-left path at Row 17, Col 1
+    // (1 * 40 + 20 = 60), (17 * 40 + 20 = 700)
+    this.player = this.physics.add.sprite(60, 700, 'spiderman').setDisplaySize(32, 32);
     this.player.setCollideWorldBounds(true);
-    // Use a very thin hitbox (14x14) so he can't even accidentally touch a wall
-    this.player.body.setSize(14, 14); 
+    // TINY HITBOX: 12px prevents sticking to 40px walls
+    this.player.body.setSize(12, 12); 
 
     this.villains = this.physics.add.group();
-    let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
-    
-    villainsList.forEach((key, index) => {
-        // Spawn villains at the top centers
-        let vx = (3 + (index * 4)) * 40 + 20; 
+    let vData = ['kingpin', 'goblin', 'doc-ock', 'venom'];
+    vData.forEach((key, i) => {
+        let vx = (2 + i * 4) * TILE_SIZE + OFFSET;
         let v = this.villains.create(vx, 60, key).setDisplaySize(32, 32);
         v.setCollideWorldBounds(true);
-        v.body.setSize(14, 14);
-        v.setVelocity(120, 0); 
+        v.body.setSize(12, 12);
+        v.setVelocity(140, 0); 
     });
 
     this.physics.add.collider(this.player, this.walls);
-    this.physics.add.collider(this.villains, this.walls, (villain) => {
-        const speed = 120;
-        const directions = [[speed, 0], [-speed, 0], [0, speed], [0, -speed]];
-        const newDir = directions[Math.floor(Math.random() * directions.length)];
-        villain.setVelocity(newDir[0], newDir[1]);
+    this.physics.add.collider(this.villains, this.walls, (v) => {
+        const speed = 140;
+        const dirs = [[speed, 0], [-speed, 0], [0, speed], [0, -speed]];
+        const pick = dirs[Math.floor(Math.random() * dirs.length)];
+        v.setVelocity(pick[0], pick[1]);
     });
 
-    this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
-    this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
+    this.physics.add.overlap(this.player, this.webs, (p, web) => {
+        web.disableBody(true, true);
+        score += 10;
+        scoreText.setText('Score: ' + score);
+        if (score > highScore) {
+            highScore = score;
+            highScoreText.setText('High: ' + highScore);
+            localStorage.setItem('spideyHighScore', highScore);
+        }
+    }, null, this);
+    
+    this.physics.add.overlap(this.player, this.villains, () => {
+        this.physics.pause();
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }, null, this);
 
     scoreText = this.add.text(20, 770, 'Score: 0', { fontSize: '20px', fill: '#fff' });
     highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
@@ -154,13 +152,11 @@ function update() {
     let cursors = this.input.keyboard.createCursorKeys();
     const speed = 160;
     
-    // 3. STRICT GRID SNAPPING
-    // Calculates the center of the nearest 40px tile
-    let centerX = Math.floor(this.player.x / 40) * 40 + 20;
-    let centerY = Math.floor(this.player.y / 40) * 40 + 20;
+    // GRID SNAP: Forces the characters into tile centers
+    let centerX = Math.floor(this.player.x / TILE_SIZE) * TILE_SIZE + OFFSET;
+    let centerY = Math.floor(this.player.y / TILE_SIZE) * TILE_SIZE + OFFSET;
 
-    // Only allow turning when Spiderman is within 4 pixels of a tile center
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 4) {
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 6) {
         this.player.x = centerX;
         this.player.y = centerY;
         this.player.setVelocity(0);
@@ -172,22 +168,6 @@ function update() {
     }
 }
 
-function collectWeb(player, web) {
-    web.disableBody(true, true);
-    score += 10;
-    scoreText.setText('Score: ' + score);
-    if (score > highScore) {
-        highScore = score;
-        highScoreText.setText('High: ' + highScore);
-        localStorage.setItem('spideyHighScore', highScore);
-    }
-}
-
-function handleGameOver() {
-    this.physics.pause();
-    document.getElementById('game-over-screen').classList.remove('hidden');
-}
-
 function startGame() {
     document.getElementById('start-screen').classList.add('hidden');
     game.scene.scenes[0].physics.resume();
@@ -197,6 +177,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
