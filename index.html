@@ -89,36 +89,29 @@ function create() {
             let px = x * 40 + 20;
             let py = y * 40 + 20;
             if (cell === 1) {
-                // Bricks are solid 40x40
+                // Bricks are 40x40 - No gaps
                 this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
-                let w = this.webs.create(px, py, 'web').setDisplaySize(16, 16);
+                let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
                 w.setTint(0xffffff); 
             }
         });
     });
 
-    // SPIDERMAN: Spawn at (380, 700). 
-    // We set origin to 0.5 to ensure he is pinned by his dead-center.
-    this.player = this.physics.add.sprite(380, 700, 'spiderman');
-    this.player.setOrigin(0.5, 0.5);
-    this.player.setDisplaySize(34, 34); // Slightly smaller than 40 to see the lane
+    // 1. PERFECT CENTER SPAWN
+    // Spiderman is now 38px in a 40px lane (only 1px cushion on each side)
+    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(38, 38);
     this.player.setCollideWorldBounds(true);
-    
-    // THE FIX: The physical box is smaller (24px) than the lane (40px)
-    // This allows for 'sliding' without getting stuck on pixel-perfect edges.
-    this.player.body.setSize(24, 24); 
+    // Setting the physical body to 40x40 makes him fill the lane entirely
+    this.player.body.setSize(40, 40); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
     villainsList.forEach((key, index) => {
-        // Spawning villains in the top lane center (y=60)
-        let v = this.villains.create(140 + (index * 120), 60, key);
-        v.setOrigin(0.5, 0.5);
-        v.setDisplaySize(34, 34);
+        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(38, 38);
         v.setCollideWorldBounds(true);
-        v.body.setSize(24, 24);
+        v.body.setSize(40, 40); 
     });
 
     this.physics.add.collider(this.player, this.walls);
@@ -205,8 +198,6 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
-
-
 
 
 
