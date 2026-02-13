@@ -144,26 +144,28 @@ function create() {
     // ── Draw walls and webs ────────────────────────────────────────────────
     this.webMap = {}; // key "col,row" -> Phaser Image
 
+    // Build a neon glow texture: bright core + soft outer rings
+    if (!this.textures.exists('web')) {
+        const g = this.add.graphics();
+        // Outer soft glow
+        g.fillStyle(0x00ffff, 0.15); g.fillCircle(12, 12, 12);
+        g.fillStyle(0x00ffff, 0.25); g.fillCircle(12, 12, 9);
+        g.fillStyle(0x00ffff, 0.45); g.fillCircle(12, 12, 6);
+        // Bright core
+        g.fillStyle(0x00ffff, 1.0);  g.fillCircle(12, 12, 3);
+        // White hot centre
+        g.fillStyle(0xffffff, 1.0);  g.fillCircle(12, 12, 1.5);
+        g.generateTexture('web', 24, 24);
+        g.destroy();
+    }
+
     mazeLayout.forEach((row, ry) => {
         row.forEach((cell, cx) => {
             const pos = tpx(cx, ry);
             if (cell === 1) {
                 this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
             } else {
-                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
-                // Pulse: scale and alpha, staggered by position so they ripple
-                const delay = ((cx * 3 + ry * 7) % 20) * 80;
-                this.tweens.add({
-                    targets: w,
-                    scaleX: 1.8,
-                    scaleY: 1.8,
-                    alpha: 0.4,
-                    duration: 700,
-                    yoyo: true,
-                    repeat: -1,
-                    delay,
-                    ease: 'Sine.easeInOut'
-                });
+                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(24, 24);
                 this.webMap[`${cx},${ry}`] = w;
             }
         });
