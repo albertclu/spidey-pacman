@@ -134,7 +134,7 @@ function create() {
 
     // Fallback coloured shapes when Asset images are missing
     ensureTexture(this, 'wall',      0x2244cc, T,  T);
-    ensureTexture(this, 'web',       0xffff00, 10, 10, true);
+    ensureTexture(this, 'web',       0x00ffff, 10, 10, true);
     ensureTexture(this, 'spiderman', 0xe23636, 30, 30, true);
     ensureTexture(this, 'kingpin',   0xdddddd, 30, 30, true);
     ensureTexture(this, 'goblin',    0x00cc00, 30, 30, true);
@@ -151,6 +151,19 @@ function create() {
                 this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
             } else {
                 const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
+                // Pulse: scale and alpha, staggered by position so they ripple
+                const delay = ((cx * 3 + ry * 7) % 20) * 80;
+                this.tweens.add({
+                    targets: w,
+                    scaleX: 1.8,
+                    scaleY: 1.8,
+                    alpha: 0.4,
+                    duration: 700,
+                    yoyo: true,
+                    repeat: -1,
+                    delay,
+                    ease: 'Sine.easeInOut'
+                });
                 this.webMap[`${cx},${ry}`] = w;
             }
         });
