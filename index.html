@@ -98,8 +98,7 @@ function create() {
         });
     });
 
-    // SPAWN SPIDERMAN: Moved to the very bottom-center path (Row 17)
-    // x = 380, y = 700 is a safe '0' spot in the layout
+    // SPAWN SPIDERMAN (Row 17, Center)
     this.player = this.physics.add.sprite(380, 700, 'spiderman').setDisplaySize(30, 30);
     this.player.setCollideWorldBounds(true);
     this.player.body.setSize(20, 20); 
@@ -109,20 +108,18 @@ function create() {
     
     villainsList.forEach((key, index) => {
         let v = this.villains.create(100 + (index * 150), 60, key).setDisplaySize(32, 32);
-        v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setSize(22, 22);
+        v.setCollideWorldBounds(true);
+        v.body.setSize(24, 24);
         
-        // NO MORE DIAGONALS: 
-        // We pick EITHER X or Y to be 0 so they move straight
-        if (index % 2 === 0) {
-            v.setVelocity(150, 0); // Move Left/Right only
-        } else {
-            v.setVelocity(0, 150); // Move Up/Down only
-        }
+        // Start them moving in a straight line (Horizontal)
+        v.setVelocity(150, 0); 
     });
 
     this.physics.add.collider(this.player, this.walls);
-    this.physics.add.collider(this.villains, this.walls);
+    
+    // THE FIX: When villains hit a wall, they call 'changeDirection'
+    this.physics.add.collider(this.villains, this.walls, changeDirection, null, this);
+    
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
     this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
 
@@ -130,15 +127,33 @@ function create() {
     highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 }
 
+function changeDirection(villain, wall) {
+    // Pick a random direction: 0: Left, 1: Right, 2: Up, 3: Down
+    let dir = Phaser.Math.Between(0, 3);
+    let speed = 150;
+
+    if (dir === 0) villain.setVelocity(-speed, 0);
+    else if (dir === 1) villain.setVelocity(speed, 0);
+    else if (dir === 2) villain.setVelocity(0, -speed);
+    else if (dir === 3) villain.setVelocity(0, speed);
+}
+
 function update() {
     let cursors = this.input.keyboard.createCursorKeys();
     this.player.setVelocity(0);
-    if (cursors.left.isDown) this.player.setVelocityX(-180);
-    else if (cursors.right.isDown) this.player.setVelocityX(180);
-    if (cursors.up.isDown) this.player.setVelocityY(-180);
-    else if (cursors.down.isDown) this.player.setVelocityY(180);
-}
 
+    // Strict 4-way movement for Spiderman
+    if (cursors.left.isDown) {
+        this.player.setVelocity(-180, 0);
+    } else if (cursors.right.isDown) {
+        this.player.setVelocity(180, 0);
+    } else if (cursors.up.isDown) {
+        this.player.setVelocity(0, -180);
+    } else if (cursors.down.isDown) {
+        this.player.setVelocity(0, 180);
+    }
+}
+    
 function collectWeb(player, web) {
     web.disableBody(true, true);
     score += 10;
@@ -164,6 +179,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
