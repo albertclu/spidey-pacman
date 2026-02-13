@@ -2,36 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Spidey-Maze Classic</title>
+    <title>Spiderman vs Villains</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
     <style>
         body { margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Courier New', Courier, monospace; }
-        #game-container { position: relative; border: 2px solid #e23636; }
+        #game-container { position: relative; }
         .ui-screen {
             position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; z-index: 10;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
         }
-        button { padding: 15px 30px; font-size: 20px; background: #e23636; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        button { padding: 15px 30px; font-size: 20px; background: #e23636; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #b11313; }
         .hidden { display: none; }
-        #ui-layer { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-around; color: white; font-size: 20px; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="ui-layer">
-        <div id="score">Score: 0</div>
-        <div id="high-score">High: 0</div>
-    </div>
-
     <div id="start-screen" class="ui-screen">
-        <h1 style="color: #e23636;">SPIDEY-MAZE</h1>
-        <p>Avoid the villains! Collect all the webs!</p>
+        <h1 style="color: #e23636;">SPIDERMAN-MAN GAME</h1>
+        <p>Welcome to the game!<br>Avoid all the villains and collect the webs!</p>
         <button onclick="startGame()">PLAY GAME</button>
     </div>
 
     <div id="game-over-screen" class="ui-screen hidden">
-        <h1 style="color: #e23636;">CAUGHT!</h1>
+        <h1 style="color: #e23636;">GAME OVER</h1>
+        <p>Spidey-Man got caught!</p>
         <button onclick="location.reload()">TRY AGAIN</button>
     </div>
 </div>
@@ -39,6 +35,8 @@
 <script>
 let score = 0;
 let highScore = localStorage.getItem('spideyHighScore') || 0;
+let scoreText;
+let highScoreText;
 
 const config = {
     type: Phaser.AUTO,
@@ -95,7 +93,6 @@ function create() {
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
-    // WIDER GRID: We use 60px instead of 40px
     const tileSize = 60;
 
     mazeLayout.forEach((row, y) => {
@@ -104,16 +101,38 @@ function create() {
             let posY = y * tileSize + tileSize/2;
 
             if (cell === 1) {
-                // Wall is 60x60
                 this.walls.create(posX, posY, 'wall').setDisplaySize(tileSize, tileSize).refreshBody();
             } else {
-                // Web is small (15x15) so it's easy to pick up
-                this.webs.create(posX, posY, 'web').setDisplaySize(20, 20);
+                // BRIGHTER WEBS: We set alpha to 1 and add a white tint 
+                // to make sure they aren't shadowed
+                let web = this.webs.create(posX, posY, 'web').setDisplaySize(25, 25);
+                web.setAlpha(1); 
+                web.setTint(0xffffff); // Forces the image to its brightest white
             }
         });
     });
+
+    // START SPIDEY AT CENTER-BOTTOM
+    // x = 300 (roughly middle of the width), y = 510 (bottom lane)
+    this.player = this.physics.add.sprite(300, 510, 'spiderman').setDisplaySize(35, 35);
+    this.player.setCollideWorldBounds(true);
+    this.player.body.setSize(25, 25);
+
+    this.villains = this.physics.add.group();
+    let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
-// SPIDEY: We make him 30px so he has 30px of "extra space" in the 60px path
+    // Spawn villains near the top so they have to travel toward Spidey
+    villainsList.forEach((key, index) => {
+        let v = this.villains.create(150 + (index * 100), 150, key).setDisplaySize(35, 35);
+        v.setBounce(1).setCollideWorldBounds(true);
+        v.body.setSize(25, 25);
+        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
+    });
+
+    // ... (rest of your colliders and text)
+}
+
+    // SPIDEY: We make him 30px so he has 30px of "extra space" in the 60px path
     this.player = this.physics.add.sprite(90, 90, 'spiderman').setDisplaySize(35, 35);
     this.player.setCollideWorldBounds(true);
     // This makes the "hitbox" a bit smaller so he doesn't clip corners
@@ -133,7 +152,7 @@ function create() {
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
     this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
 }
-    
+
 function update() {
     let cursors = this.input.keyboard.createCursorKeys();
     this.player.setVelocity(0);
@@ -146,10 +165,10 @@ function update() {
 function collectWeb(player, web) {
     web.disableBody(true, true);
     score += 10;
-    document.getElementById('score').innerText = "Score: " + score;
+    scoreText.setText('Score: ' + score);
     if (score > highScore) {
         highScore = score;
-        document.getElementById('high-score').innerText = "High: " + highScore;
+        highScoreText.setText('High: ' + highScore);
         localStorage.setItem('spideyHighScore', highScore);
     }
 }
@@ -168,4 +187,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
+
+
 
