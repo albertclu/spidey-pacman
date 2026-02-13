@@ -136,4 +136,16 @@ function collectWeb(player, web) {
 }
 
 function handleGameOver() {
-    this.physics
+    this.physics.pause();
+    document.getElementById('game-over-screen').classList.remove('hidden');
+}
+
+function startGame() {
+    document.getElementById('start-screen').classList.add('hidden');
+    game.scene.scenes[0].physics.resume();
+}
+
+const game = new Phaser.Game(config);
+</script>
+</body>
+</html>
