@@ -33,23 +33,16 @@
 </div>
 
 <script>
-let score = 0;
-let highScore = localStorage.getItem('spideyHighScore') || 0;
-let scoreText;
-let highScoreText;
+// The maze is 19 columns wide and 20 rows high. 
+// At 40px per tile, that is 760x800.
+const TILE_SIZE = 40; 
 
 const config = {
     type: Phaser.AUTO,
-    width: 800, 
-    height: 600,
+    width: 760, 
+    height: 800,
     parent: 'game-container',
-    physics: { 
-        default: 'arcade', 
-        arcade: { 
-            gravity: { y: 0 },
-            debug: false // Set to true if you want to see the "hitboxes"
-        } 
-    },
+    physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
     scene: { preload: preload, create: create, update: update }
 };
 
@@ -76,106 +69,65 @@ const mazeLayout = [
 ];
 
 function preload() {
-    // --- IMPORTANT: Ensure these names match your GitHub files exactly! ---
-    // If your folder is named "assets", these paths are correct.
-    this.load.image('spiderman', 'assets/spiderman.png');
-    this.load.image('kingpin', 'assets/kingpin.png');
-    this.load.image('goblin', 'assets/goblin.png');
-    this.load.image('doc-ock', 'assets/doc-ock.png');
-    this.load.image('venom', 'assets/venom.png');
-    this.load.image('wall', 'assets/wall.png'); 
-    this.load.image('web', 'assets/web.png'); 
+    // We use './' to tell the browser "look in the same folder as this HTML file"
+    this.load.image('spiderman', './assets/spiderman.png');
+    this.load.image('kingpin', './assets/kingpin.png');
+    this.load.image('goblin', './assets/goblin.png');
+    this.load.image('doc-ock', './assets/doc-ock.png');
+    this.load.image('venom', './assets/venom.png');
+    this.load.image('wall', './assets/wall.png'); 
+    this.load.image('web', './assets/web.png'); 
 }
 
 function create() {
     this.physics.pause();
-    
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
-    const tileSize = 60;
-
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
-            let posX = x * tileSize + tileSize/2;
-            let posY = y * tileSize + tileSize/2;
-
+            let px = x * TILE_SIZE + TILE_SIZE/2;
+            let py = y * TILE_SIZE + TILE_SIZE/2;
             if (cell === 1) {
-                this.walls.create(posX, posY, 'wall').setDisplaySize(tileSize, tileSize).refreshBody();
+                this.walls.create(px, py, 'wall').setDisplaySize(TILE_SIZE, TILE_SIZE).refreshBody();
             } else {
-                // BRIGHTER WEBS: We set alpha to 1 and add a white tint 
-                // to make sure they aren't shadowed
-                let web = this.webs.create(posX, posY, 'web').setDisplaySize(25, 25);
-                web.setAlpha(1); 
-                web.setTint(0xffffff); // Forces the image to its brightest white
+                // Brighter Webs
+                let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
+                w.setTint(0xffffff);
             }
         });
     });
 
-    // START SPIDEY AT CENTER-BOTTOM
-    // x = 300 (roughly middle of the width), y = 510 (bottom lane)
-    this.player = this.physics.add.sprite(300, 510, 'spiderman').setDisplaySize(35, 35);
+    // CENTER-BOTTOM Spawn
+    this.player = this.physics.add.sprite(380, 660, 'spiderman').setDisplaySize(30, 30);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setSize(25, 25);
-
-    this.villains = this.physics.add.group();
-    let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
-    
-    // Spawn villains near the top so they have to travel toward Spidey
-    villainsList.forEach((key, index) => {
-        let v = this.villains.create(150 + (index * 100), 150, key).setDisplaySize(35, 35);
-        v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setSize(25, 25);
-        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
-    });
-
-    // ... (rest of your colliders and text)
-}
-
-    // SPIDEY: We make him 30px so he has 30px of "extra space" in the 60px path
-    this.player = this.physics.add.sprite(90, 90, 'spiderman').setDisplaySize(35, 35);
-    this.player.setCollideWorldBounds(true);
-    // This makes the "hitbox" a bit smaller so he doesn't clip corners
-    this.player.body.setSize(25, 25);
+    this.player.body.setSize(20, 20); // Small hitbox to prevent sticking
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     villainsList.forEach((key, index) => {
-        let v = this.villains.create(300, 300, key).setDisplaySize(35, 35);
+        let v = this.villains.create(100 + (index * 150), 100, key).setDisplaySize(30, 30);
         v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setSize(25, 25); // Smaller hitboxes prevent getting stuck
+        v.body.setSize(20, 20);
         v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
     });
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls);
-    this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
-    this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
+    this.physics.add.overlap(this.player, this.webs, (p, w) => w.disableBody(true, true), null, this);
+    this.physics.add.overlap(this.player, this.villains, () => {
+        this.physics.pause();
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }, null, this);
 }
 
 function update() {
     let cursors = this.input.keyboard.createCursorKeys();
     this.player.setVelocity(0);
-    if (cursors.left.isDown) this.player.setVelocityX(-180);
-    else if (cursors.right.isDown) this.player.setVelocityX(180);
-    if (cursors.up.isDown) this.player.setVelocityY(-180);
-    else if (cursors.down.isDown) this.player.setVelocityY(180);
-}
-
-function collectWeb(player, web) {
-    web.disableBody(true, true);
-    score += 10;
-    scoreText.setText('Score: ' + score);
-    if (score > highScore) {
-        highScore = score;
-        highScoreText.setText('High: ' + highScore);
-        localStorage.setItem('spideyHighScore', highScore);
-    }
-}
-
-function handleGameOver() {
-    this.physics.pause();
-    document.getElementById('game-over-screen').classList.remove('hidden');
+    if (cursors.left.isDown) this.player.setVelocityX(-160);
+    else if (cursors.right.isDown) this.player.setVelocityX(160);
+    if (cursors.up.isDown) this.player.setVelocityY(-160);
+    else if (cursors.down.isDown) this.player.setVelocityY(160);
 }
 
 function startGame() {
@@ -187,6 +139,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
