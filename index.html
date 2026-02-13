@@ -89,6 +89,7 @@ function create() {
             let px = x * 40 + 20;
             let py = y * 40 + 20;
             if (cell === 1) {
+                // Bricks are 40x40 - No gaps
                 this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
                 let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
@@ -97,27 +98,26 @@ function create() {
         });
     });
 
-    // SPAWN SPIDERMAN (Exactly centered in a Row 17 path)
-    this.player = this.physics.add.sprite(380, 660, 'spiderman').setDisplaySize(32, 32);
+    // 1. PERFECT CENTER SPAWN
+    // Spiderman is now 38px in a 40px lane (only 1px cushion on each side)
+    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(38, 38);
     this.player.setCollideWorldBounds(true);
+    // Setting the physical body to 40x40 makes him fill the lane entirely
+    this.player.body.setSize(40, 40); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
     villainsList.forEach((key, index) => {
-        let v = this.villains.create(100 + (index * 150), 60, key).setDisplaySize(32, 32);
+        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(38, 38);
         v.setCollideWorldBounds(true);
-        // Custom property to help with AI timing
-        v.lastTurn = 0;
+        v.body.setSize(40, 40); 
     });
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls);
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
     this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
-
-    scoreText = this.add.text(20, 770, 'Score: 0', { fontSize: '20px', fill: '#fff' });
-    highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 }
 
 function changeDirection(villain, wall) {
@@ -133,18 +133,17 @@ function changeDirection(villain, wall) {
 
 function update(time) {
     const speed = 160;
-    const tolerance = 4; // How close to the center Spidey needs to be to turn
+    // We reduced tolerance to 2px so snapping is much more aggressive
+    const tolerance = 2; 
 
-    // 1. SPIDERMAN MOVEMENT (Grid-Locked)
+    // 1. SPIDERMAN - FORCED CENTER LOGIC
     let cursors = this.input.keyboard.createCursorKeys();
-    
-    // Check if Spiderman is near the center of a tile
     let centerX = Math.floor(this.player.x / 40) * 40 + 20;
     let centerY = Math.floor(this.player.y / 40) * 40 + 20;
-    let distanceToCenter = Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY);
 
-    if (distanceToCenter < tolerance) {
-        this.player.body.reset(centerX, centerY); // Snap to center
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < tolerance) {
+        this.player.x = centerX;
+        this.player.y = centerY;
         this.player.setVelocity(0);
 
         if (cursors.left.isDown) this.player.setVelocityX(-speed);
@@ -153,19 +152,18 @@ function update(time) {
         else if (cursors.down.isDown) this.player.setVelocityY(speed);
     }
 
-    // 2. VILLAIN HUNTING AI (Grid-Locked)
+    // 2. VILLAINS - FORCED CENTER HUNTING
     this.villains.getChildren().forEach((v) => {
         let vCenterX = Math.floor(v.x / 40) * 40 + 20;
         let vCenterY = Math.floor(v.y / 40) * 40 + 20;
-        let vDist = Phaser.Math.Distance.Between(v.x, v.y, vCenterX, vCenterY);
 
-        if (vDist < tolerance) {
-            v.body.reset(vCenterX, vCenterY); // Snap villain to center
-            
+        if (Phaser.Math.Distance.Between(v.x, v.y, vCenterX, vCenterY) < tolerance) {
+            v.x = vCenterX;
+            v.y = vCenterY;
+
             let diffX = this.player.x - v.x;
             let diffY = this.player.y - v.y;
 
-            // Chasing Logic: Pick the lane that gets them closer to Spiderman
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 v.setVelocity(diffX > 0 ? 120 : -120, 0);
             } else {
@@ -200,6 +198,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
