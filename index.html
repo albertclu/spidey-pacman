@@ -85,49 +85,47 @@ function create() {
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
-    // 1. Build the maze exactly as it appears in your screenshot
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
             let px = x * 40 + 20;
             let py = y * 40 + 20;
             if (cell === 1) {
-                // refreshBody() is critical so villains "see" the wall
                 this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
-                let w = this.webs.create(px, py, 'web').setDisplaySize(18, 18);
+                let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
                 w.setTint(0xffffff); 
             }
         });
     });
 
-    // 2. SAFE SPAWN FOR SPIDERMAN
-    // In your mazeLayout, row 13 column 9 is a wide open path.
-    // x = 9 * 40 + 20 = 380
-    // y = 13 * 40 + 20 = 540
-    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(30, 30);
+    // SPAWN SPIDERMAN: Moved to the very bottom-center path (Row 17)
+    // x = 380, y = 700 is a safe '0' spot in the layout
+    this.player = this.physics.add.sprite(380, 700, 'spiderman').setDisplaySize(30, 30);
     this.player.setCollideWorldBounds(true);
-    // Makes the physical body smaller so he doesn't clip the red bricks
     this.player.body.setSize(20, 20); 
 
-    // 3. SAFE SPAWN FOR VILLAINS
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
+    
     villainsList.forEach((key, index) => {
-        // Spawning them in the very top path (y=60) where it is clear
-        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(32, 32);
+        let v = this.villains.create(100 + (index * 150), 60, key).setDisplaySize(32, 32);
         v.setBounce(1).setCollideWorldBounds(true);
         v.body.setSize(22, 22);
-        v.setVelocity(Phaser.Math.Between(-120, 120), Phaser.Math.Between(-120, 120));
+        
+        // NO MORE DIAGONALS: 
+        // We pick EITHER X or Y to be 0 so they move straight
+        if (index % 2 === 0) {
+            v.setVelocity(150, 0); // Move Left/Right only
+        } else {
+            v.setVelocity(0, 150); // Move Up/Down only
+        }
     });
 
-    // 4. THE FIX FOR "GHOSTING": Assign colliders to both Player AND Villains
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls);
-    
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
     this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
 
-    // Update UI
     scoreText = this.add.text(20, 770, 'Score: 0', { fontSize: '20px', fill: '#fff' });
     highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 }
@@ -166,6 +164,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
