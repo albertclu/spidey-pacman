@@ -1,37 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Spiderman vs Villains</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
-    <style>
-        body { margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Courier New', Courier, monospace; }
-        #game-container { position: relative; }
-        .ui-screen {
-            position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
-        }
-        button { padding: 15px 30px; font-size: 20px; background: #e23636; color: white; border: none; cursor: pointer; border-radius: 5px; }
-        button:hover { background: #b11313; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-
-<div id="game-container">
-    <div id="start-screen" class="ui-screen">
-        <h1 style="color: #e23636;">SPIDERMAN-MAN GAME</h1>
-        <p>Welcome to the game!<br>Avoid all the villains and collect the webs!</p>
-        <button onclick="startGame()">PLAY GAME</button>
-    </div>
-
-    <div id="game-over-screen" class="ui-screen hidden">
-        <h1 style="color: #e23636;">GAME OVER</h1>
-        <p>Spidey-Man got caught!</p>
-        <button onclick="location.reload()">TRY AGAIN</button>
-    </div>
-</div>
-
 <script>
 let score = 0;
 let highScore = localStorage.getItem('spideyHighScore') || 0;
@@ -43,7 +9,10 @@ const config = {
     width: 760, 
     height: 800,
     parent: 'game-container',
-    physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
+    physics: { 
+        default: 'arcade', 
+        arcade: { gravity: { y: 0 }, debug: false } 
+    },
     scene: { preload: preload, create: create, update: update }
 };
 
@@ -81,7 +50,6 @@ function preload() {
 
 function create() {
     this.physics.pause(); 
-    
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
@@ -92,36 +60,36 @@ function create() {
             if (cell === 1) {
                 this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
-                let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
+                let w = this.webs.create(px, py, 'web').setDisplaySize(15, 15);
                 w.setTint(0xffffff); 
             }
         });
     });
 
-    // Spidey Spawned exactly at the center of the Row 17 path (x=380, y=700)
-    this.player = this.physics.add.sprite(380, 700, 'spiderman').setDisplaySize(34, 34);
+    // SPAWN SPIDEY: (Row 13, Col 9) is a safe '0' spot
+    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(32, 32);
     this.player.setCollideWorldBounds(true);
+    // CRITICAL: Shrink the physical hitbox so he can turn corners easily
     this.player.body.setSize(20, 20); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
-    
     villainsList.forEach((key, index) => {
-        // Spawn villains in top lane centers
-        let v = this.villains.create(140 + (index * 120), 60, key).setDisplaySize(34, 34);
+        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(32, 32);
         v.setCollideWorldBounds(true);
         v.body.setSize(20, 20);
-        v.setVelocity(150, 0); // Start moving straight
+        v.setVelocity(120, 0); // Start moving straight
     });
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls, (villain) => {
-        // When a villain hits a wall, force them to turn cardinal (No Diagonals)
-        let dir = Phaser.Math.Between(0, 3);
-        if (dir === 0) villain.setVelocity(150, 0);
-        else if (dir === 1) villain.setVelocity(-150, 0);
-        else if (dir === 2) villain.setVelocity(0, 150);
-        else if (dir === 3) villain.setVelocity(0, -150);
+        // Force cardinal turns only on wall hit
+        const dir = Phaser.Math.Between(0, 3);
+        const speed = 120;
+        if (dir === 0) villain.setVelocity(speed, 0);
+        else if (dir === 1) villain.setVelocity(-speed, 0);
+        else if (dir === 2) villain.setVelocity(0, speed);
+        else if (dir === 3) villain.setVelocity(0, -speed);
     });
 
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
@@ -133,14 +101,14 @@ function create() {
 
 function update() {
     let cursors = this.input.keyboard.createCursorKeys();
-    const speed = 180;
+    const speed = 160;
     
-    // GRID LOCK MATH: Find the exact center of the current lane
+    // GRID LOCK MATH: Force Spidey to stay in the middle of the 40px lanes
     let centerX = Math.floor(this.player.x / 40) * 40 + 20;
     let centerY = Math.floor(this.player.y / 40) * 40 + 20;
 
-    // Only allow turning if we are close to the center of a tile
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 5) {
+    // Snapping logic: Only allow movement changes when centered
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 4) {
         this.player.x = centerX;
         this.player.y = centerY;
         this.player.setVelocity(0);
@@ -175,9 +143,3 @@ function startGame() {
 
 const game = new Phaser.Game(config);
 </script>
-</body>
-</html>
-
-
-
-
