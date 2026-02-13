@@ -1,3 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spiderman vs Villains</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Courier New', Courier, monospace; }
+        #game-container { position: relative; }
+        .ui-screen {
+            position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
+        }
+        button { padding: 15px 30px; font-size: 20px; background: #e23636; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #b11313; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="ui-screen">
+        <h1 style="color: #e23636;">SPIDERMAN-MAN GAME</h1>
+        <p>Welcome to the game!<br>Avoid all the villains and collect the webs!</p>
+        <button onclick="startGame()">PLAY GAME</button>
+    </div>
+
+    <div id="game-over-screen" class="ui-screen hidden">
+        <h1 style="color: #e23636;">GAME OVER</h1>
+        <p>Spidey-Man got caught!</p>
+        <button onclick="location.reload()">TRY AGAIN</button>
+    </div>
+</div>
+
 <script>
 let score = 0;
 let highScore = localStorage.getItem('spideyHighScore') || 0;
@@ -66,30 +100,39 @@ function create() {
         });
     });
 
-    // SPAWN SPIDEY: (Row 13, Col 9) is a safe '0' spot
-    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(32, 32);
+    // FIND AUTOMATIC SAFE SPAWN
+    // We search the maze array for the first '0' in the lower section
+    let spawnX = 380; // Default center
+    let spawnY = 540; // Default lane
+    
+    // Logic to find a clear lane at the bottom
+    for (let row = 17; row > 10; row--) {
+        if (mazeLayout[row][9] === 0) {
+            spawnY = row * 40 + 20;
+            break;
+        }
+    }
+
+    this.player = this.physics.add.sprite(spawnX, spawnY, 'spiderman').setDisplaySize(32, 32);
     this.player.setCollideWorldBounds(true);
-    // CRITICAL: Shrink the physical hitbox so he can turn corners easily
-    this.player.body.setSize(20, 20); 
+    // Hitbox is now 18x18 (much smaller than the 40px lane) to prevent sticking
+    this.player.body.setSize(18, 18); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     villainsList.forEach((key, index) => {
-        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(32, 32);
+        let v = this.villains.create(140 + (index * 120), 60, key).setDisplaySize(32, 32);
         v.setCollideWorldBounds(true);
-        v.body.setSize(20, 20);
-        v.setVelocity(120, 0); // Start moving straight
+        v.body.setSize(18, 18);
+        v.setVelocity(120, 0); 
     });
 
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls, (villain) => {
-        // Force cardinal turns only on wall hit
-        const dir = Phaser.Math.Between(0, 3);
         const speed = 120;
-        if (dir === 0) villain.setVelocity(speed, 0);
-        else if (dir === 1) villain.setVelocity(-speed, 0);
-        else if (dir === 2) villain.setVelocity(0, speed);
-        else if (dir === 3) villain.setVelocity(0, -speed);
+        const dirs = [[speed, 0], [-speed, 0], [0, speed], [0, -speed]];
+        const pick = dirs[Math.floor(Math.random() * dirs.length)];
+        villain.setVelocity(pick[0], pick[1]);
     });
 
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
@@ -103,12 +146,11 @@ function update() {
     let cursors = this.input.keyboard.createCursorKeys();
     const speed = 160;
     
-    // GRID LOCK MATH: Force Spidey to stay in the middle of the 40px lanes
+    // CENTER SNAPPING: Forces characters to stay in the middle of lanes
     let centerX = Math.floor(this.player.x / 40) * 40 + 20;
     let centerY = Math.floor(this.player.y / 40) * 40 + 20;
 
-    // Snapping logic: Only allow movement changes when centered
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 4) {
+    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY) < 5) {
         this.player.x = centerX;
         this.player.y = centerY;
         this.player.setVelocity(0);
@@ -143,3 +185,8 @@ function startGame() {
 
 const game = new Phaser.Game(config);
 </script>
+</body>
+</html>
+
+
+
