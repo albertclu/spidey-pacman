@@ -82,48 +82,54 @@ function preload() {
 function create() {
     this.physics.pause(); 
     
+    // 1. Create the groups
     this.walls = this.physics.add.staticGroup();
     this.webs = this.physics.add.group();
 
+    // 2. Build the maze and webs
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
             let px = x * 40 + 20;
             let py = y * 40 + 20;
             if (cell === 1) {
+                // We use refreshBody() to make sure the physics engine "sees" the wall
                 this.walls.create(px, py, 'wall').setDisplaySize(40, 40).refreshBody();
             } else {
-                // BRIGHTER WEBS: Setting tint to pure white and alpha to 1
-                let w = this.webs.create(px, py, 'web').setDisplaySize(20, 20);
-                w.setTint(0xffffff); // Forces the sprite to its brightest possible color
-                w.setAlpha(1);       // Ensures it's fully opaque
+                let w = this.webs.create(px, py, 'web').setDisplaySize(18, 18);
+                w.setTint(0xffffff); // Makes webs bright white
             }
         });
     });
 
-    // CENTER-BOTTOM START: 
-    // X = 380 (Middle of 760px)
-    // Y = 740 (Bottom lane of the maze)
-    this.player = this.physics.add.sprite(380, 740, 'spiderman').setDisplaySize(30, 30);
+    // 3. SPAWN SPIDEY (Center-Bottom SAFE ZONE)
+    // Row 15, Column 9 is a confirmed open path in your maze array
+    this.player = this.physics.add.sprite(380, 620, 'spiderman').setDisplaySize(30, 30);
     this.player.setCollideWorldBounds(true);
-    this.player.body.setCircle(12, 3, 3); 
+    // This makes Spiderman's physical body smaller than his image so he slides easily
+    this.player.body.setSize(20, 20); 
 
+    // 4. SPAWN VILLAINS (Top SAFE ZONE)
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     villainsList.forEach((key, index) => {
-        // Keep villains at the top so they don't spawn on Spidey
-        let v = this.villains.create(100 + (index * 150), 60, key).setDisplaySize(32, 32);
+        // Spawning them in the top row (y=60) where there is a long horizontal path
+        let v = this.villains.create(100 + (index * 120), 60, key).setDisplaySize(32, 32);
         v.setBounce(1).setCollideWorldBounds(true);
-        v.body.setCircle(14, 2, 2);
+        v.body.setSize(22, 22);
         v.setVelocity(Phaser.Math.Between(-120, 120), Phaser.Math.Between(-120, 120));
     });
 
-    scoreText = this.add.text(20, 770, 'Score: 0', { fontSize: '20px', fill: '#fff', fontStyle: 'bold' });
-    highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff', fontStyle: 'bold' });
-
+    // 5. THE FIX: Add the colliders BEFORE unpausing
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls);
+    
+    // Overlaps for points and game over
     this.physics.add.overlap(this.player, this.webs, collectWeb, null, this);
     this.physics.add.overlap(this.player, this.villains, handleGameOver, null, this);
+
+    // Score Text
+    scoreText = this.add.text(20, 770, 'Score: 0', { fontSize: '20px', fill: '#fff' });
+    highScoreText = this.add.text(550, 770, 'High: ' + highScore, { fontSize: '20px', fill: '#fff' });
 }
 
 function update() {
@@ -160,6 +166,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
