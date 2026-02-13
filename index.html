@@ -1,4 +1,19 @@
-// Spider-Man Maze Game
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spidey vs The Sinister Four</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #e23636; } /* Spidey Red Border */
+    </style>
+</head>
+<body>
+
+<script>
+// --- YOUR GAME CODE STARTS HERE ---
 const config = {
     type: Phaser.AUTO,
     width: 800,
@@ -11,7 +26,7 @@ const config = {
 };
 
 function preload() {
-    // Load your custom assets here
+    // These paths must match your assets folder exactly!
     this.load.image('spiderman', 'assets/spiderman.png');
     this.load.image('kingpin', 'assets/kingpin.png');
     this.load.image('goblin', 'assets/goblin.png');
@@ -21,11 +36,9 @@ function preload() {
 }
 
 function create() {
-    // 1. Create the Maze (can use a Tilemap or simple physics groups)
-    // 2. Add Spiderman
     this.player = this.physics.add.sprite(400, 300, 'spiderman');
+    this.player.setCollideWorldBounds(true);
     
-    // 3. Add Villains
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
@@ -33,18 +46,27 @@ function create() {
         let v = this.villains.create(100 * (index + 1), 100, key);
         v.setCollideWorldBounds(true);
         v.setBounce(1);
-        v.setVelocity(Phaser.Math.Between(-100, 100), Phaser.Math.Between(-100, 100));
+        v.setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(-150, 150));
     });
 
-    // 4. Overlap/Collision Logic
     this.physics.add.overlap(this.player, this.villains, gameOver, null, this);
 }
 
 function update() {
-    // Handle movement (Arrow Keys)
     let cursors = this.input.keyboard.createCursorKeys();
-    if (cursors.left.isDown) this.player.setVelocityX(-160);
-    else if (cursors.right.isDown) this.player.setVelocityX(160);
+    this.player.setVelocity(0);
+
+    if (cursors.left.isDown) {
+        this.player.setVelocityX(-200);
+    } else if (cursors.right.isDown) {
+        this.player.setVelocityX(200);
+    }
+    
+    if (cursors.up.isDown) {
+        this.player.setVelocityY(-200);
+    } else if (cursors.down.isDown) {
+        this.player.setVelocityY(200);
+    }
 }
 
 function gameOver() {
@@ -53,4 +75,9 @@ function gameOver() {
     location.reload();
 }
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+// --- YOUR GAME CODE ENDS HERE ---
+</script>
+
+</body>
+</html>
