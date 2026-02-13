@@ -89,7 +89,6 @@ function create() {
 
     mazeLayout.forEach((row, y) => {
         row.forEach((cell, x) => {
-            // Standardizing tile centers to (x*40)+20
             let px = x * 40 + 20;
             let py = y * 40 + 20;
             if (cell === 1) {
@@ -101,30 +100,43 @@ function create() {
         });
     });
 
-    // 1. FIXED SPIDERMAN SPAWN
-    // We use Row 13, Column 9: (9 * 40 + 20 = 380), (13 * 40 + 20 = 540)
-    // This is a guaranteed "0" path in your maze array
-    this.player = this.physics.add.sprite(380, 540, 'spiderman').setDisplaySize(32, 32);
+    // --- NEW AUTO-SAFE SPAWN LOGIC ---
+    let spawnX = 60; // Default fallback
+    let spawnY = 60;
+    let foundSafeSpot = false;
+
+    // We scan the maze from bottom to top to find the first '0'
+    for (let row = mazeLayout.length - 1; row >= 0; row--) {
+        for (let col = 0; col < mazeLayout[row].length; col++) {
+            if (mazeLayout[row][col] === 0) {
+                spawnX = col * 40 + 20;
+                spawnY = row * 40 + 20;
+                foundSafeSpot = true;
+                break;
+            }
+        }
+        if (foundSafeSpot) break;
+    }
+
+    this.player = this.physics.add.sprite(spawnX, spawnY, 'spiderman').setDisplaySize(32, 32);
     this.player.setCollideWorldBounds(true);
-    // Use a small hitbox (16x16) so he never touches the bricks while centered
-    this.player.body.setSize(16, 16); 
+    // Use a very thin hitbox (14x14) so he can't even accidentally touch a wall
+    this.player.body.setSize(14, 14); 
 
     this.villains = this.physics.add.group();
     let villainsList = ['kingpin', 'goblin', 'doc-ock', 'venom'];
     
     villainsList.forEach((key, index) => {
-        // Spawn villains in Row 1 (y=60) at various column centers
+        // Spawn villains at the top centers
         let vx = (3 + (index * 4)) * 40 + 20; 
         let v = this.villains.create(vx, 60, key).setDisplaySize(32, 32);
         v.setCollideWorldBounds(true);
-        v.body.setSize(16, 16);
-        v.setVelocity(120, 0); // Start moving straight
+        v.body.setSize(14, 14);
+        v.setVelocity(120, 0); 
     });
 
-    // 2. REINFORCED COLLIDERS
     this.physics.add.collider(this.player, this.walls);
     this.physics.add.collider(this.villains, this.walls, (villain) => {
-        // Force cardinal turns only to prevent diagonal drift
         const speed = 120;
         const directions = [[speed, 0], [-speed, 0], [0, speed], [0, -speed]];
         const newDir = directions[Math.floor(Math.random() * directions.length)];
@@ -185,6 +197,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
