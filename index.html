@@ -132,30 +132,45 @@ function changeDirection(villain, wall) {
 }
 
 function update(time) {
+    const speed = 160;
+    const tolerance = 4; // How close to the center Spidey needs to be to turn
+
+    // 1. SPIDERMAN MOVEMENT (Grid-Locked)
     let cursors = this.input.keyboard.createCursorKeys();
-    let speed = 160;
+    
+    // Check if Spiderman is near the center of a tile
+    let centerX = Math.floor(this.player.x / 40) * 40 + 20;
+    let centerY = Math.floor(this.player.y / 40) * 40 + 20;
+    let distanceToCenter = Phaser.Math.Distance.Between(this.player.x, this.player.y, centerX, centerY);
 
-    // 1. Spiderman Movement: Snap to Grid
-    this.player.setVelocity(0);
-    if (cursors.left.isDown) this.player.setVelocityX(-speed);
-    else if (cursors.right.isDown) this.player.setVelocityX(speed);
-    else if (cursors.up.isDown) this.player.setVelocityY(-speed);
-    else if (cursors.down.isDown) this.player.setVelocityY(speed);
+    if (distanceToCenter < tolerance) {
+        this.player.body.reset(centerX, centerY); // Snap to center
+        this.player.setVelocity(0);
 
-    // 2. Villain Chasing AI
+        if (cursors.left.isDown) this.player.setVelocityX(-speed);
+        else if (cursors.right.isDown) this.player.setVelocityX(speed);
+        else if (cursors.up.isDown) this.player.setVelocityY(-speed);
+        else if (cursors.down.isDown) this.player.setVelocityY(speed);
+    }
+
+    // 2. VILLAIN HUNTING AI (Grid-Locked)
     this.villains.getChildren().forEach((v) => {
-        // Only change direction if they aren't moving or every 500ms
-        if (v.body.velocity.x === 0 && v.body.velocity.y === 0 || time > v.lastTurn) {
+        let vCenterX = Math.floor(v.x / 40) * 40 + 20;
+        let vCenterY = Math.floor(v.y / 40) * 40 + 20;
+        let vDist = Phaser.Math.Distance.Between(v.x, v.y, vCenterX, vCenterY);
+
+        if (vDist < tolerance) {
+            v.body.reset(vCenterX, vCenterY); // Snap villain to center
+            
             let diffX = this.player.x - v.x;
             let diffY = this.player.y - v.y;
 
-            // Simple AI: Move toward Spiderman's larger distance
+            // Chasing Logic: Pick the lane that gets them closer to Spiderman
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 v.setVelocity(diffX > 0 ? 120 : -120, 0);
             } else {
                 v.setVelocity(0, diffY > 0 ? 120 : -120);
             }
-            v.lastTurn = time + 500; // Wait 0.5 seconds before re-calculating
         }
     });
 }
@@ -185,6 +200,7 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
 
 
 
