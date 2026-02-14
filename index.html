@@ -168,28 +168,7 @@ function create() {
         });
     });
 
-    // ── Draw tunnel corridors on left and right sides ──────────────────────
-    // Row 9 has open exits at col=0 (left) and col=18 (right)
-    // Draw dark floor + wall borders extending to canvas edges
-    const tunnelY   = TUNNEL_ROW * T + OFF; // pixel centre of tunnel row
-    const wallColor = 0x2244cc;
-    const floorColor = 0x000011;
-    const g = this.add.graphics();
-
-    // Left tunnel: x=0 to x=TUNNEL_W
-    g.fillStyle(wallColor, 1);
-    g.fillRect(0, tunnelY - T, TUNNEL_W + T/2, T);        // top wall
-    g.fillRect(0, tunnelY,     TUNNEL_W + T/2, T);        // bottom wall
-    g.fillStyle(floorColor, 1);
-    g.fillRect(0, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
-
-    // Right tunnel: x=TUNNEL_W+COLS*T to canvas right
-    const rx = TUNNEL_W + COLS * T - T/2;
-    g.fillStyle(wallColor, 1);
-    g.fillRect(rx, tunnelY - T, TUNNEL_W + T/2, T);       // top wall
-    g.fillRect(rx, tunnelY,     TUNNEL_W + T/2, T);       // bottom wall
-    g.fillStyle(floorColor, 1);
-    g.fillRect(rx, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
+    
 
     // ── Player ────────────────────────────────────────────────────────────
     // Starts at center-bottom open cell: col=9, row=14 (verified open)
@@ -445,3 +424,4 @@ const game = new Phaser.Game(config);
 </script>
 </body>
 </html>
+
