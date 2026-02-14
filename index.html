@@ -41,19 +41,15 @@
 
 <script>
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const T       = 34;           // tile size — 19*34=646, fits in any viewport
-const OFF     = 17;           // half-tile: centres at col*T+OFF
-const COLS    = 19;
-const ROWS    = 19;
-const TUNNEL_ROW = 9;         // the row with open left/right exits
-const TUNNEL_W   = 60;        // extra px of corridor drawn on each side
-const CANVAS_W   = COLS * T + TUNNEL_W * 2;  // 646 + 120 = 766
-const CANVAS_H   = ROWS * T + 34;            // 646 + 34 scorebar = 680
-const PLAYER_SPEED  = 150;
-const VILLAIN_SPEED = 110;
+const T    = 40;           // tile size in px
+const OFF  = 20;           // half-tile offset: tile centres live at col*T+OFF
+const COLS = 19;
+const ROWS = 19;
+const PLAYER_SPEED  = 150; // px/s
+const VILLAIN_SPEED = 110; // px/s
 
-// Tile centre in pixels — offset by TUNNEL_W so maze is centred
-const tpx = (col, row) => ({ x: col * T + OFF + TUNNEL_W, y: row * T + OFF });
+// Tile centre in pixels
+const tpx = (col, row) => ({ x: col * T + OFF, y: row * T + OFF });
 
 const mazeLayout = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -78,8 +74,6 @@ const mazeLayout = [
 ];
 
 function isWall(col, row) {
-    // Tunnel exits: col -1 and col COLS are open on the tunnel row
-    if (row === TUNNEL_ROW && (col < 0 || col >= COLS)) return false;
     if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return true;
     return mazeLayout[row][col] === 1;
 }
@@ -104,10 +98,11 @@ let gameActive = false;
 // ─── PHASER CONFIG ────────────────────────────────────────────────────────────
 const config = {
     type: Phaser.AUTO,
-    width:  CANVAS_W,
-    height: CANVAS_H,
+    width:  COLS * T,        // 760
+    height: ROWS * T + 40,   // 800 game + 40 scorebar
     parent: 'game-container',
     backgroundColor: '#000011',
+    // No physics needed — we do pure math movement
     scene: { preload, create, update }
 };
 
@@ -162,34 +157,11 @@ function create() {
             if (cell === 1) {
                 this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
             } else {
-                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
+                const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(12, 12);
                 this.webMap[`${cx},${ry}`] = w;
             }
         });
     });
-
-    // ── Draw tunnel corridors on left and right sides ──────────────────────
-    // Row 9 has open exits at col=0 (left) and col=18 (right)
-    // Draw dark floor + wall borders extending to canvas edges
-    const tunnelY   = TUNNEL_ROW * T + OFF; // pixel centre of tunnel row
-    const wallColor = 0x2244cc;
-    const floorColor = 0x000011;
-    const g = this.add.graphics();
-
-    // Left tunnel: x=0 to x=TUNNEL_W
-    g.fillStyle(wallColor, 1);
-    g.fillRect(0, tunnelY - T, TUNNEL_W + T/2, T);        // top wall
-    g.fillRect(0, tunnelY,     TUNNEL_W + T/2, T);        // bottom wall
-    g.fillStyle(floorColor, 1);
-    g.fillRect(0, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
-
-    // Right tunnel: x=TUNNEL_W+COLS*T to canvas right
-    const rx = TUNNEL_W + COLS * T - T/2;
-    g.fillStyle(wallColor, 1);
-    g.fillRect(rx, tunnelY - T, TUNNEL_W + T/2, T);       // top wall
-    g.fillRect(rx, tunnelY,     TUNNEL_W + T/2, T);       // bottom wall
-    g.fillStyle(floorColor, 1);
-    g.fillRect(rx, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
 
     // ── Player ────────────────────────────────────────────────────────────
     // Starts at center-bottom open cell: col=9, row=14 (verified open)
@@ -226,9 +198,9 @@ function create() {
     });
 
     // ── Score bar ─────────────────────────────────────────────────────────
-    const barY = ROWS * T + 17;
-    scoreText     = this.add.text(20,          barY, 'Score: 0',           { fontSize: '18px', fill: '#fff' }).setOrigin(0, 0.5);
-    highScoreText = this.add.text(CANVAS_W-20, barY, 'Best: ' + highScore, { fontSize: '18px', fill: '#fff' }).setOrigin(1, 0.5);
+    const barY = ROWS * T + 20;
+    scoreText     = this.add.text(20,       barY, 'Score: 0',         { fontSize: '20px', fill: '#fff' }).setOrigin(0, 0.5);
+    highScoreText = this.add.text(COLS*T-20, barY, 'Best: ' + highScore, { fontSize: '20px', fill: '#fff' }).setOrigin(1, 0.5);
 
     // ── Input ─────────────────────────────────────────────────────────────
     this.cursors  = this.input.keyboard.createCursorKeys();
@@ -273,26 +245,11 @@ function advanceActor(actor, speedTiles, delta, chooseNext) {
         }
     }
 
-    // Lerp pixel position between current tile centre and next tile centre.
-    // For tunnel wrapping (col 0↔18), lerp toward the canvas edge instead of jumping.
+    // Lerp pixel position between current tile centre and next tile centre
     const from = tpx(actor.col, actor.row);
-    let toX, toY;
-    const nextCol = actor.col + actor.dx;
-    const nextRow = actor.row + actor.dy;
-    if (nextCol < 0) {
-        // Exiting left — move toward left edge of canvas
-        toX = 0;
-        toY = from.y;
-    } else if (nextCol >= COLS) {
-        // Exiting right — move toward right edge of canvas
-        toX = CANVAS_W;
-        toY = from.y;
-    } else {
-        const to = tpx(nextCol, nextRow);
-        toX = to.x; toY = to.y;
-    }
-    actor.x = from.x + (toX - from.x) * actor.progress;
-    actor.y = from.y + (toY - from.y) * actor.progress;
+    const to   = tpx(actor.col + actor.dx, actor.row + actor.dy);
+    actor.x = from.x + (to.x - from.x) * actor.progress;
+    actor.y = from.y + (to.y - from.y) * actor.progress;
     actor.sprite.x = actor.x;
     actor.sprite.y = actor.y;
 }
