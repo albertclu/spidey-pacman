@@ -1,397 +1,538 @@
-<!DOCTYPE html>
+y
+- Added CSS animations for pulsing heading, bouncing Spiderman image, and rotating thumbs up emoji
+- Included Spiderman image with celebratory thumbs up emoji
+- Message displays: "Congratulations! You have beaten the Spidey Pac-Man Game!!! Stay tuned for more levels!"
+- Score is displayed on the congratulations screen
+- Added gradient background styling for the victory screen<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Spiderman vs Villains</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: 'Courier New', Courier, monospace;
-    }
-    #game-container {
-      position: relative;
-    }
-    .ui-screen {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      text-align: center;
-      z-index: 10;
-    }
-    h1 {
-      font-size: 42px;
-      margin-bottom: 10px;
-    }
-    p {
-      font-size: 18px;
-      line-height: 1.6;
-    }
-    button {
-      padding: 15px 30px;
-      font-size: 20px;
-      background: #e23636;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 10px;
-    }
-    button:hover {
-      background: #b11313;
-    }
-    .hidden {
-      display: none !important;
-    }
-    #congratulations-screen {
-      background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(226,54,54,0.2) 100%);
-      padding: 40px;
-    }
-    #congratulations-screen h1 {
-      font-size: 52px;
-      color: #ffd700;
-      text-shadow: 2px 2px 4px rgba(255,215,0,0.5);
-      margin-bottom: 20px;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    #congratulations-screen p {
-      font-size: 20px;
-      color: #ffffff;
-      margin: 15px 0;
-      line-height: 1.8;
-    }
-    .spiderman-celebration {
-      margin: 30px 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .spiderman-image {
-      width: 150px;
-      height: 150px;
-      margin: 0 15px;
-      animation: bounce 1s infinite;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-20px); }
-    }
-    .thumbs-up {
-      font-size: 80px;
-      animation: thumbsRotate 2s infinite;
-    }
-    @keyframes thumbsRotate {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(10deg); }
-      75% { transform: rotate(-10deg); }
-    }
-  </style>
-</head>
-<body>
-  <div id="game-container">
-    <div id="start-screen" class="ui-screen">
-      <h1 style="color:#e23636;">SPIDERMAN GAME</h1>
-      <p>Collect all the yellow dots and avoid the villains!<br>Use arrow keys to move.</p>
-      <button onclick="startGame()">PLAY GAME</button>
-    </div>
-    <div id="game-over-screen" class="ui-screen hidden">
-      <h1 style="color:#e23636;">GAME OVER</h1>
-      <p>Spidey got caught!</p>
-      <p id="final-score"></p>
-      <button onclick="location.reload()">TRY AGAIN</button>
-    </div>
-    <div id="congratulations-screen" class="ui-screen hidden">
-      <h1>🎉 Congratulations! 🎉</h1>
-      <p>You have beaten the Spidey Pac-Man Game!!!</p>
-      <div class="spiderman-celebration">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Spider-Man_The_Animated_Series.jpg/220px-Spider-Man_The_Animated_Series.jpg" alt="Spiderman" class="spiderman-image">
-        <span class="thumbs-up">👍</span>
-      </div>
-      <p><strong>Stay tuned for more levels!</strong></p>
-      <p id="congratulations-score"></p>
-      <button onclick="location.reload()">PLAY AGAIN</button>
-    </div>
-    <div id="win-screen" class="ui-screen hidden">
-      <h1 style="color:#f0d000;">YOU WIN!</h1>
-      <p>All webs collected!</p>
-      <p id="win-score"></p>
-      <button onclick="location.reload()">PLAY AGAIN</button>
-    </div>
-  </div>
+    <head>
+          <meta charset="UTF-8">
+          <title>Spiderman vs Villains</title>
+      <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+      <style>
+              body {
+                        margin: 0;
+                        background-color: #000;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        font-family: 'Courier New', Courier, monospace;
+              }
+              #game-container {
+                        position: relative;
+              }
+              .ui-screen {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.85);
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        color: white;
+                        text-align: center;
+                        z-index: 10;
+              }
+              h1 {
+                        font-size: 42px;
+                        margin-bottom: 10px;
+              }
+              p {
+                        font-size: 18px;
+                        line-height: 1.6;
+              }
+              button {
+                        padding: 15px 30px;
+                        font-size: 20px;
+                        background: #e23636;
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                        border-radius: 5px;
+                        margin-top: 10px;
+              }
+              button:hover {
+                        background: #b11313;
+              }
+              .hidden {
+                        display: none !important;
+              }
+              /* Congratulations Screen Styling */
+              #congratulations-screen {
+                        background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(226,54,54,0.2) 100%);
+                        padding: 40px;
+              }
+              #congratulations-screen h1 {
+                        font-size: 52px;
+                        color: #ffd700;
+                        text-shadow: 2px 2px 4px rgba(255,215,0,0.5);
+                        margin-bottom: 20px;
+                        animation: pulse 1.5s infinite;
+              }
+              @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.05); }
+              }
+              #congratulations-screen p {
+                        font-size: 20px;
+                        color: #ffffff;
+                        margin: 15px 0;
+                        line-height: 1.8;
+              }
+              .spiderman-celebration {
+                        margin: 30px 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+              }
+              .spiderman-image {
+                        width: 150px;
+                        height: 150px;
+                        margin: 0 15px;
+                        animation: bounce 1s infinite;
+              }
+              @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-20px); }
+              }
+              .thumbs-up {
+                        font-size: 80px;
+                        animation: thumbsRotate 2s infinite;
+              }
+              @keyframes thumbsRotate {
+                        0%, 100% { transform: rotate(0deg); }
+                        25% { transform: rotate(10deg); }
+                        75% { transform: rotate(-10deg); }
+              }
+            </style>
+    </head>
+    <body>
+          <div id="game-container">
+                  <div id="start-screen" class="ui-screen">
+                            <h1 style="color:#e23636;">SPIDERMAN GAME</h1>h1>
+                            <p>Collect all the yellow dots and avoid the villains!<br>Use arrow keys to move.</p>
+                        <button onclick="startGame()">PLAY GAME</button>button>
+                  </div>div>
+              <div id="game-over-screen" class="ui-screen hidden">
+                    <h1 style="color:#e23636;">GAME OVER</h1>h1>
+                    <p>Spidey got caught!</p>
+                    <p id="final-score"></p>
+                    <button onclick="location.reload()">TRY AGAIN</button>button>
+              </div>div>
+              <div id="congratulations-screen" class="ui-screen hidden">
+                    <h1>🎉 Congratulations! 🎉</h1>
+                    <p>You have beaten the Spidey Pac-Man Game!!!</p>
+                    <div class="spiderman-celebration">
+                            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/2/2c/Spider-Man_The_Animated_Series.jpg/220px-Spider-Man_The_Animated_Series.jpg" alt="Spiderman" class="spiderman-image">
+                            <span class="thumbs-up">👍</span>span>
+                    </div>div>
+                    <p><strong>Stay tuned for more levels!</strong></p>
+                    <p id="congratulations-score"></p>
+                    <button onclick="location.reload()">PLAY AGAIN</button>button>
+              </div>div>
+              <div id="win-screen" class="ui-screen hidden">
+                    <h1 style="color:#f0d000;">YOU WIN!</h1>
+                    <p>All webs collected!</p>
+                    <p id="win-score"></p>
+                    <button onclick="location.reload()">PLAY AGAIN</button>button>
+              </div>div>
+          </div>div>
+    
+      <script>
+              // ─── CONSTANTS ──────────────────────────────────────────────────────────────── 
+              const T = 34; // tile size in px
+              const OFF = 17; // half-tile offset: tile centres live at col*T+OFF
+              const COLS = 19;
+              const ROWS = 19;
+              const TUNNEL_ROW = 9; // the row with open left/right exits
+              const TUNNEL_W = 60; // extra px of corridor drawn on each side
+              const CANVAS_W = COLS * T + TUNNEL_W * 2; // 646 + 120 = 766
+              const CANVAS_H = ROWS * T + 34; // 646 + 34 scorebar = 680
+              const PLAYER_SPEED = 150; // px/s
+              const VILLAIN_SPEED = 110; // px/s
 
-  <script>
-    const T = 34;
-    const OFF = 17;
-    const COLS = 19;
-    const ROWS = 19;
-    const TUNNEL_ROW = 9;
-    const TUNNEL_W = 60;
-    const CANVAS_W = COLS * T + TUNNEL_W * 2;
-    const CANVAS_H = ROWS * T + 34;
-    const PLAYER_SPEED = 150;
-    const VILLAIN_SPEED = 110;
+              // Tile centre in pixels — offset by TUNNEL_W so maze is centred
+              const tpx = (col, row) => ({ x: col * T + OFF + TUNNEL_W, y: row * T + OFF });
 
-    const tpx = (col, row) => ({ x: col * T + OFF + TUNNEL_W, y: row * T + OFF });
+              const mazeLayout = [
+                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                        [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+                        [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                        [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+                        [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+                        [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
+                        [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+                        [1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1],
+                        [0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0],
+                        [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
+                        [1,1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1,1],
+                        [1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1],
+                        [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+                        [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+                        [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+                        [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+                        [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+                        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+                      ];
 
-    const mazeLayout = [
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
-      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
-      [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
-      [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1],
-      [0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0],
-      [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
-      [1,1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1,1],
-      [1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1],
-      [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-      [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-      [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
-      [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
-      [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ];
+              function isWall(col, row) {
+                        // Tunnel exits: col -1 and col COLS are open on the tunnel row
+                        if (row === TUNNEL_ROW && (col < 0 || col >= COLS)) return false;
+                        if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return true;
+                        return mazeLayout[row][col] === 1;
+              }
 
-    function isWall(col, row) {
-      if (row === TUNNEL_ROW && (col < 0 || col >= COLS)) return false;
-      if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return true;
-      return mazeLayout[row][col] === 1;
-    }
+              const ALL_DIRS = [
+                  { dx: 1, dy: 0 },
+                  { dx: -1, dy: 0 },
+                  { dx: 0, dy: 1 },
+                  { dx: 0, dy: -1 },
+                      ];
 
-    const ALL_DIRS = [
-      { dx: 1, dy: 0 },
-      { dx: -1, dy: 0 },
-      { dx: 0, dy: 1 },
-      { dx: 0, dy: -1 },
-    ];
+              function openDirs(col, row) {
+                        return ALL_DIRS.filter(d => !isWall(col + d.dx, row + d.dy));
+              }
 
-    function openDirs(col, row) {
-      return ALL_DIRS.filter(d => !isWall(col + d.dx, row + d.dy));
-    }
+              // ─── GAME STATE ─────────────────────────────────────────────────────────────── 
+              let score = 0;
+              let highScore = parseInt(localStorage.getItem('spideyHighScore') || '0');
+              let scoreText, highScoreText;
+              let gameActive = false;
 
-    let score = 0;
-    let highScore = parseInt(localStorage.getItem('spideyHighScore') || '0');
-    let scoreText, highScoreText;
-    let gameActive = false;
+              // ─── PHASER CONFIG ──────────────────────────────────────────────────────────── 
+              const config = {
+                        type: Phaser.AUTO,
+                        width: CANVAS_W,
+                        height: CANVAS_H,
+                        parent: 'game-container',
+                        backgroundColor: '#000011',
+                        scene: { preload, create, update }
+              };
 
-    const config = {
-      type: Phaser.AUTO,
-      width: CANVAS_W,
-      height: CANVAS_H,
-      parent: 'game-container',
-      backgroundColor: '#000011',
-      scene: { preload, create, update }
-    };
+              // ─── PRELOAD ────────────────────────────────────────────────────────────────── 
+              function preload() {
+                        this.load.on('loaderror', () => {}); // silently ignore missing files
+                        this.load.image('spiderman', 'Assets/spiderman.png');
+                        this.load.image('kingpin', 'Assets/kingpin.png');
+                        this.load.image('goblin', 'Assets/goblin.png');
+                        this.load.image('doc-ock', 'Assets/doc-ock.png');
+                        this.load.image('venom', 'Assets/venom.png');
+                        this.load.image('wall', 'Assets/wall.png');
+                        // 'web' is drawn programmatically — not loaded from file
+              }
 
-    function preload() {
-      this.load.on('loaderror', () => {});
-      this.load.image('spiderman', 'Assets/spiderman.png');
-      this.load.image('kingpin', 'Assets/kingpin.png');
-      this.load.image('goblin', 'Assets/goblin.png');
-      this.load.image('doc-ock', 'Assets/doc-ock.png');
-      this.load.image('venom', 'Assets/venom.png');
-      this.load.image('wall', 'Assets/wall.png');
-    }
+              // Generates a solid-colour texture if the image asset is missing
+              function ensureTexture(scene, key, color, w, h, circle = false) {
+                        if (scene.textures.exists(key)) return;
+                        const g = scene.add.graphics();
+                        g.fillStyle(color, 1);
+                        if (circle) g.fillCircle(w / 2, h / 2, w / 2);
+                        else g.fillRect(0, 0, w, h);
+                        g.generateTexture(key, w, h);
+                        g.destroy();
+              }
 
-    function ensureTexture(scene, key, color, w, h, circle = false) {
-      if (scene.textures.exists(key)) return;
-      const g = scene.add.graphics();
-      g.fillStyle(color, 1);
-      if (circle) g.fillCircle(w / 2, h / 2, w / 2);
-      else g.fillRect(0, 0, w, h);
-      g.generateTexture(key, w, h);
-      g.destroy();
-    }
+              // ─── CREATE ─────────────────────────────────────────────────────────────────── 
+              function create() {
+                        // Fallback coloured shapes when Asset images are missing
+                        ensureTexture(this, 'wall', 0x2244cc, T, T);
+                        ensureTexture(this, 'spiderman', 0xe23636, 30, 30, true);
+                        ensureTexture(this, 'kingpin', 0xdddddd, 30, 30, true);
+                        ensureTexture(this, 'goblin', 0x00cc00, 30, 30, true);
+                        ensureTexture(this, 'doc-ock', 0xff8800, 30, 30, true);
+                        ensureTexture(this, 'venom', 0xaa00ee, 30, 30, true);
 
-    function create() {
-      ensureTexture(this, 'wall', 0x2244cc, T, T);
-      ensureTexture(this, 'spiderman', 0xe23636, 30, 30, true);
-      ensureTexture(this, 'kingpin', 0xdddddd, 30, 30, true);
-      ensureTexture(this, 'goblin', 0x00cc00, 30, 30, true);
-      ensureTexture(this, 'doc-ock', 0xff8800, 30, 30, true);
-      ensureTexture(this, 'venom', 0xaa00ee, 30, 30, true);
+                        // ── Draw walls and webs ──────────────────────────────────────────────── 
+                        this.webMap = {}; // key "col,row" -> Phaser Image
 
-      this.webMap = {};
+                        // Bright yellow dot like Pac-Man pellets — force recreate to avoid stale texture
+                        if (this.textures.exists('web')) this.textures.remove('web');
+                        const gWeb = this.add.graphics();
+                        gWeb.fillStyle(0xffee00, 1.0);
+                        gWeb.fillCircle(6, 6, 6);
+                        gWeb.generateTexture('web', 12, 12);
+                        gWeb.destroy();
 
-      if (this.textures.exists('web')) this.textures.remove('web');
-      const gWeb = this.add.graphics();
-      gWeb.fillStyle(0xffee00, 1.0);
-      gWeb.fillCircle(6, 6, 6);
-      gWeb.generateTexture('web', 12, 12);
-      gWeb.destroy();
+                        mazeLayout.forEach((row, ry) => {
+                                    row.forEach((cell, cx) => {
+                                                  const pos = tpx(cx, ry);
+                                                  if (cell === 1) {
+                                                                  this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
+                                                  } else {
+                                                                  const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
+                                                                  this.webMap[`${cx},${ry}`] = w;
+                                                  }
+                                    });
+                        });
 
-      mazeLayout.forEach((row, ry) => {
-        row.forEach((cell, cx) => {
-          const pos = tpx(cx, ry);
-          if (cell === 1) {
-            this.add.image(pos.x, pos.y, 'wall').setDisplaySize(T, T);
-          } else {
-            const w = this.add.image(pos.x, pos.y, 'web').setDisplaySize(10, 10);
-            this.webMap[`${cx},${ry}`] = w;
-          }
-        });
-      });
+                        // ── Draw tunnel corridors on left and right sides ────────────────────── 
+                        // Row 9 has open exits at col=0 (left) and col=18 (right)
+                        // Draw dark floor + wall borders extending to canvas edges
+                        const tunnelY = TUNNEL_ROW * T + OFF; // pixel centre of tunnel row
+                        const wallColor = 0x2244cc;
+                        const floorColor = 0x000011;
+                        const g = this.add.graphics();
 
-      const tunnelY = TUNNEL_ROW * T + OFF;
-      const wallColor = 0x2244cc;
-      const floorColor = 0x000011;
-      const g = this.add.graphics();
+                        // Left tunnel: x=0 to x=TUNNEL_W
+                        g.fillStyle(wallColor, 1);
+                        g.fillRect(0, tunnelY - T, TUNNEL_W + T/2, T); // top wall
+                        g.fillRect(0, tunnelY, TUNNEL_W + T/2, T); // bottom wall
+                        g.fillStyle(floorColor, 1);
+                        g.fillRect(0, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
 
-      g.fillStyle(wallColor, 1);
-      g.fillRect(0, tunnelY - T, TUNNEL_W + T/2, T);
-      g.fillRect(0, tunnelY, TUNNEL_W + T/2, T);
-      g.fillStyle(floorColor, 1);
-      g.fillRect(0, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4);
+                        // Right tunnel: x=TUNNEL_W+COLS*T to canvas right
+                        const rx = TUNNEL_W + COLS * T - T/2;
+                        g.fillStyle(wallColor, 1);
+                        g.fillRect(rx, tunnelY - T, TUNNEL_W + T/2, T); // top wall
+                        g.fillRect(rx, tunnelY, TUNNEL_W + T/2, T); // bottom wall
+                        g.fillStyle(floorColor, 1);
+                        g.fillRect(rx, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4); // floor gap
 
-      const rx = TUNNEL_W + COLS * T - T/2;
-      g.fillStyle(wallColor, 1);
-      g.fillRect(rx, tunnelY - T, TUNNEL_W + T/2, T);
-      g.fillRect(rx, tunnelY, TUNNEL_W + T/2, T);
-      g.fillStyle(floorColor, 1);
-      g.fillRect(rx, tunnelY - T/2 + 2, TUNNEL_W + T/2, T - 4);
+                        // ── Player ──────────────────────────────────────────────────────────── 
+                        // Starts at center-bottom open cell: col=9, row=14 (verified open)
+                        const sp = tpx(9, 14);
+                        this.player = {
+                                    sprite: this.add.image(sp.x, sp.y, 'spiderman').setDisplaySize(30, 30),
+                                    x: sp.x,
+                                    y: sp.y,
+                                    col: 9,
+                                    row: 14,
+                                    dx: 0,
+                                    dy: 0,
+                                    ndx: 0,
+                                    ndy: 0,
+                                    progress: 0,
+                                    moving: false
+                        };
 
-      const sp = tpx(9, 14);
-      this.player = {
-        sprite: this.add.image(sp.x, sp.y, 'spiderman').setDisplaySize(30, 30),
-        x: sp.x,
-        y: sp.y,
-        col: 9,
-        row: 14,
-        dx: 0,
-        dy: 0,
-        ndx: 0,
-        ndy: 0,
-        progress: 0,
-        moving: false
-      };
+                        // ── Villains ────────────────────────────────────────────────────────── 
+                        const vDefs = [
+                            { key: 'kingpin', col: 2, row: 1 },
+                            { key: 'goblin', col: 7, row: 3 },
+                            { key: 'doc-ock', col: 11, row: 3 },
+                            { key: 'venom', col: 16, row: 1 },
+                                  ];
 
-      const vDefs = [
-        { key: 'kingpin', col: 2, row: 1 },
-        { key: 'goblin', col: 7, row: 3 },
-        { key: 'doc-ock', col: 11, row: 3 },
-        { key: 'venom', col: 16, row: 1 },
-      ];
+                        this.villains = vDefs.map(({ key, col, row }) => {
+                                    const pos = tpx(col, row);
+                                    const dirs = openDirs(col, row);
+                                    const d = dirs[Math.floor(Math.random() * dirs.length)] || { dx: 1, dy: 0 };
+                                    return {
+                                                  sprite: this.add.image(pos.x, pos.y, key).setDisplaySize(30, 30),
+                                                  x: pos.x,
+                                                  y: pos.y,
+                                                  col,
+                                                  row,
+                                                  dx: d.dx,
+                                                  dy: d.dy,
+                                                  progress: 0,
+                                                  moving: false
+                                    };
+                        });
 
-      this.villains = vDefs.map(({ key, col, row }) => {
-        const pos = tpx(col, row);
-        const dirs = openDirs(col, row);
-        const d = dirs[Math.floor(Math.random() * dirs.length)] || { dx: 1, dy: 0 };
-        return {
-          sprite: this.add.image(pos.x, pos.y, key).setDisplaySize(30, 30),
-          x: pos.x,
-          y: pos.y,
-          col,
-          row,
-          dx: d.dx,
-          dy: d.dy,
-          progress: 0,
-          moving: false
-        };
-      });
+                        // ── Score bar ───────────────────────────────────────────────────────── 
+                        const barY = ROWS * T + 17;
+                        scoreText = this.add.text(20, barY, 'Score: 0', { fontSize: '18px', fill: '#fff' }).setOrigin(0, 0.5);
+                        highScoreText = this.add.text(CANVAS_W-20, barY, 'Best: ' + highScore, { fontSize: '18px', fill: '#fff' }).setOrigin(1, 0.5);
 
-      const barY = ROWS * T + 17;
-      scoreText = this.add.text(20, barY, 'Score: 0', { fontSize: '18px', fill: '#fff' }).setOrigin(0, 0.5);
-      highScoreText = this.add.text(CANVAS_W-20, barY, 'Best: ' + highScore, { fontSize: '18px', fill: '#fff' }).setOrigin(1, 0.5);
+                        // ── Input ───────────────────────────────────────────────────────────── 
+                        this.cursors = this.input.keyboard.createCursorKeys();
+                        this.gameOver = false;
+              }
 
-      this.cursors = this.input.keyboard.createCursorKeys();
-      this.gameOver = false;
-    }
+              // ─── TILE-INTERPOLATION MOVEMENT ───────────────────────────────────────────── 
+              function advanceActor(actor, speedTiles, delta, chooseNext) {
+                        if (!actor.moving) return;
 
-    function advanceActor(actor, speedTiles, delta, chooseNext) {
-      if (!actor.moving) return;
-      actor.progress += speedTiles * delta;
-      if (actor.progress >= 1) {
-        actor.col += actor.dx;
-        actor.row += actor.dy;
-        actor.col = ((actor.col % COLS) + COLS) % COLS;
-        actor.row = Math.max(0, Math.min(ROWS - 1, actor.row));
-        actor.progress -= 1;
-        const next = chooseNext(actor);
-        if (next) {
-          actor.dx = next.dx;
-          actor.dy = next.dy;
-        } else {
-          actor.dx = 0;
-          actor.dy = 0;
-          actor.moving = false;
-        }
-      }
-      const from = tpx(actor.col, actor.row);
-      let toX, toY;
-      const nextCol = actor.col + actor.dx;
-      const nextRow = actor.row + actor.dy;
-      if (nextCol < 0) {
-        toX = 0;
-        toY = from.y;
-      } else if (nextCol >= COLS) {
-        toX = CANVAS_W;
-        toY = from.y;
-      } else {
-        const to = tpx(nextCol, nextRow);
-        toX = to.x;
-        toY = to.y;
-      }
-      actor.x = from.x + (toX - from.x) * actor.progress;
-      actor.y = from.y + (toY - from.y) * actor.progress;
-      actor.sprite.x = actor.x;
-      actor.sprite.y = actor.y;
-    }
+                        actor.progress += speedTiles * delta;
 
-    function playerNextDir(player) {
-      if ((player.ndx !== 0 || player.ndy !== 0) && !isWall(player.col + player.ndx, player.row + player.ndy)) {
-        const d = { dx: player.ndx, dy: player.ndy };
-        player.ndx = 0;
-        player.ndy = 0;
-        return d;
-      }
-      if ((player.dx !== 0 || player.dy !== 0) && !isWall(player.col + player.dx, player.row + player.dy)) {
-        return { dx: player.dx, dy: player.dy };
-      }
-      return null;
-    }
+                        if (actor.progress >= 1) {
+                                    actor.col += actor.dx;
+                                    actor.row += actor.dy;
+                                    actor.col = ((actor.col % COLS) + COLS) % COLS;
+                                    actor.row = Math.max(0, Math.min(ROWS - 1, actor.row));
+                                    actor.progress -= 1;
 
-    function bfsNextDir(startCol, startRow, targetCol, targetRow) {
-      if (startCol === targetCol && startRow === targetRow) return null;
-      const visited = new Set();
-      const queue = [{ col: startCol, row: startRow, firstDir: null }];
-      visited.add(`${startCol},${startRow}`);
-      while (queue.length > 0) {
-        const { col, row, firstDir } = queue.shift();
-        for (const d of ALL_DIRS) {
-          const nc = col + d.dx;
-          const nr = row + d.dy;
-          const key = `${nc},${nr}`;
-          if (isWall(nc, nr) || visited.has(key)) continue;
-          visited.add(key);
-          const step = firstDir || d;
-          if (nc === targetCol && nr === targetRow) return step;
-          queue.push({ col: nc, row: nr, firstDir: step });
-        }
-      }
-      return null;
-    }
+                                    const next = chooseNext(actor);
+                                    if (next) {
+                                                  actor.dx = next.dx;
+                                                  actor.dy = next.dy;
+                                    } else {
+                                                  actor.dx = 0;
+                                                  actor.dy = 0;
+                                                  actor.moving = false;
+                                    }
+                        }
 
-    function villainNextDir(villain, playerCol, playerRow) {
-      const chase = bfsNextDir(villain.col, villain.row, playerCol, playerRow);
-      if (chase) return chase;
-      const open = openDirs(villain.col, villain.row);
-      const nonReverse = open.filter(d => !(d.dx === -villain.dx && d.dy === -villain.dy));
-      const choices = nonReverse.lengt
+                        const from = tpx(actor.col, actor.row);
+                        let toX, toY;
+                        const nextCol = actor.col + actor.dx;
+                        const nextRow = actor.row + actor.dy;
+
+                        if (nextCol < 0) {
+                                    toX = 0;
+                                    toY = from.y;
+                        } else if (nextCol >= COLS) {
+                                    toX = CANVAS_W;
+                                    toY = from.y;
+                        } else {
+                                    const to = tpx(nextCol, nextRow);
+                                    toX = to.x;
+                                    toY = to.y;
+                        }
+
+                        actor.x = from.x + (toX - from.x) * actor.progress;
+                        actor.y = from.y + (toY - from.y) * actor.progress;
+                        actor.sprite.x = actor.x;
+                        actor.sprite.y = actor.y;
+              }
+
+              function playerNextDir(player) {
+                        if ((player.ndx !== 0 || player.ndy !== 0) && !isWall(player.col + player.ndx, player.row + player.ndy)) {
+                                    const d = { dx: player.ndx, dy: player.ndy };
+                                    player.ndx = 0;
+                                    player.ndy = 0;
+                                    return d;
+                        }
+                        if ((player.dx !== 0 || player.dy !== 0) && !isWall(player.col + player.dx, player.row + player.dy)) {
+                                    return { dx: player.dx, dy: player.dy };
+                        }
+                        return null;
+              }
+
+              function bfsNextDir(startCol, startRow, targetCol, targetRow) {
+                        if (startCol === targetCol && startRow === targetRow) return null;
+
+                        const visited = new Set();
+                        const queue = [{ col: startCol, row: startRow, firstDir: null }];
+                        visited.add(`${startCol},${startRow}`);
+
+                        while (queue.length > 0) {
+                                    const { col, row, firstDir } = queue.shift();
+
+                                    for (const d of ALL_DIRS) {
+                                                  const nc = col + d.dx;
+                                                  const nr = row + d.dy;
+                                                  const key = `${nc},${nr}`;
+
+                                                  if (isWall(nc, nr) || visited.has(key)) continue;
+                                                  visited.add(key);
+
+                                                  const step = firstDir || d;
+                                                  if (nc === targetCol && nr === targetRow) return step;
+
+                                                  queue.push({ col: nc, row: nr, firstDir: step });
+                                    }
+                        }
+                        return null;
+              }
+
+              function villainNextDir(villain, playerCol, playerRow) {
+                        const chase = bfsNextDir(villain.col, villain.row, playerCol, playerRow);
+                        if (chase) return chase;
+
+                        const open = openDirs(villain.col, villain.row);
+                        const nonReverse = open.filter(d => !(d.dx === -villain.dx && d.dy === -villain.dy));
+                        const choices = nonReverse.length > 0 ? nonReverse : open;
+                        return choices.length > 0 ? choices[Math.floor(Math.random() * choices.length)] : null;
+              }
+
+              // ─── UPDATE ─────────────────────────────────────────────────────────────────── 
+              function update(time, deltaMs) {
+                        if (!gameActive || this.gameOver) return;
+
+                        const delta = Math.min(deltaMs / 1000, 0.05);
+
+                        const c = this.cursors;
+                        if (c.left.isDown) { this.player.ndx = -1; this.player.ndy = 0; }
+                        else if (c.right.isDown) { this.player.ndx = 1; this.player.ndy = 0; }
+                        else if (c.up.isDown) { this.player.ndx = 0; this.player.ndy = -1; }
+                        else if (c.down.isDown) { this.player.ndx = 0; this.player.ndy = 1; }
+
+                        const p = this.player;
+                        if (!p.moving && (p.ndx !== 0 || p.ndy !== 0)) {
+                                    if (!isWall(p.col + p.ndx, p.row + p.ndy)) {
+                                                  p.dx = p.ndx;
+                                                  p.dy = p.ndy;
+                                                  p.ndx = 0;
+                                                  p.ndy = 0;
+                                                  p.moving = true;
+                                    }
+                        }
+
+                        advanceActor(p, PLAYER_SPEED / T, delta, playerNextDir);
+
+                        if (p.progress < (PLAYER_SPEED / T) * delta + 0.05) {
+                                    const key = `${p.col},${p.row}`;
+                                    if (this.webMap[key]) {
+                                                  this.webMap[key].destroy();
+                                                  delete this.webMap[key];
+                                                  score += 10;
+                                                  scoreText.setText('Score: ' + score);
+                                                  if (score > highScore) {
+                                                                  highScore = score;
+                                                                  highScoreText.setText('Best: ' + highScore);
+                                                                  localStorage.setItem('spideyHighScore', highScore);
+                                                  }
+                                                  if (Object.keys(this.webMap).length === 0) {
+                                                                  endGame(this, true);
+                                                                  return;
+                                                  }
+                                    }
+                        }
+
+                        const pCol = p.col, pRow = p.row;
+                        for (const v of this.villains) {
+                                    if (!v.moving) {
+                                                  const next = villainNextDir(v, pCol, pRow);
+                                                  if (next) {
+                                                                  v.dx = next.dx;
+                                                                  v.dy = next.dy;
+                                                                  v.moving = true;
+                                                  }
+                                    }
+                                    advanceActor(v, VILLAIN_SPEED / T, delta, (actor) => villainNextDir(actor, pCol, pRow));
+                        }
+
+                        for (const v of this.villains) {
+                                    if (Phaser.Math.Distance.Between(p.x, p.y, v.x, v.y) < 18) {
+                                                  endGame(this, false);
+                                                  return;
+                                    }
+                        }
+              }
+
+              // ─── END GAME ───────────────────────────────────────────────────────────────── 
+              function endGame(scene, won) {
+                        scene.gameOver = true;
+                        gameActive = false;
+                        if (won) {
+                                    document.getElementById('congratulations-score').textContent = 'Score: ' + score;
+                                    document.getElementById('congratulations-screen').classList.remove('hidden');
+                        } else {
+                                    document.getElementById('final-score').textContent = 'Score: ' + score;
+                                    document.getElementById('game-over-screen').classList.remove('hidden');
+                        }
+              }
+
+              // ─── START ──────────────────────────────────────────────────────────────────── 
+              function startGame() {
+                        document.getElementById('start-screen').classList.add('hidden');
+                        const scene = game.scene.scenes[0];
+                        scene.villains.forEach(v => {
+                                    v.moving = true;
+                        });
+                        gameActive = true;
+              }
+
+              const game = new Phaser.Game(config);
+      </script>
+    </body>
+</html>html>
+      </script></p></strong></h1></p></p>
+    </body>
+      </style></title>
+    </head>
