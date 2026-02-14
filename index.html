@@ -162,36 +162,36 @@
                 </style>
     </head>
     <body>
-            <div id="game-container"></div>div>
+            <div id="game-container"></div>
 
             <div id="start-screen" class="ui-screen">
-                        <h1 style="color:#e23636;">SPIDERMAN GAME</h1>h1>
-                        <p>Collect all the yellow dots and avoid the villains<br>Use arrow keys to move.<br>5 Levels</p>
-                    <button onclick="startGame()">PLAY GAME</button>button>
+                        <h1 style="color:#e23636;">SPIDERMAN GAME</h1>
+                        <p>Collect all the yellow dots and avoid the villains<br>Use arrow keys to move.<br></p>
+                    <button onclick="startGame()">PLAY GAME</button>
             </div>div>
     
         <div id="level-complete-screen" class="ui-screen hidden">
-                <h1 style="color:#f0d000;">LEVEL COMPLETE!</h1>h1>
+                <h1 style="color:#f0d000;">LEVEL COMPLETE!</h1>
                 <p id="level-info" style="font-size:24px; margin:10px 0;"></p>
                 <p id="level-score" style="font-size:20px; margin:10px 0;"></p>
-                <button onclick="nextLevel()">NEXT LEVEL</button>button>
-        </div>div>
+                <button onclick="nextLevel()">NEXT LEVEL</button>
+        </div>
     
         <div id="game-over-screen" class="ui-screen hidden">
-                <h1 style="color:#e23636;">GAME OVER</h1>h1>
+                <h1 style="color:#e23636;">GAME OVER</h1>
                 <p>Spidey got caught !</p>
                 <p id="final-score"></p>
-                <button onclick="startGame()">TRY AGAIN</button>button>
-        </div>div>
+                <button onclick="startGame()">TRY AGAIN</button>
+        </div>
     
         <div id="congratulations-screen" class="ui-screen hidden">
-                <h1 style="color:#f0d000;">YOU WON ALL 5 LEVELS!</h1>h1>
+                <h1 style="color:#f0d000;">YOU BEAT ALL 5 LEVELS!</h1>
                 <p style="font-size:24px; margin:10px 0;">You have beaten the Spidey Pac-Man Game!!!</p>
                 <img src="Assets/spiderman.png" alt="Spiderman" class="congratulations-image" style="filter: drop-shadow(0 0 10px #f0d000);">
                 <p style="font-size:20px; color:#f0d000; margin-top: 10px;">🎉 🎊 🎉</p>
                 <p id="win-score"></p>
-                <button onclick="startGame()">PLAY AGAIN</button>button>
-        </div>div>
+                <button onclick="startGame()">PLAY AGAIN</button>
+        </div>
     
         <script>
                     const GRID_SIZE = 40;
