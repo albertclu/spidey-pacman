@@ -5,24 +5,36 @@
             <title>Spiderman vs Villains</title>
         <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
         <style>
-                    body {
+                    * {
+                                    box-sizing: border-box;
+                    }
+                    html, body {
                                     margin: 0;
+                                    padding: 0;
+                                    width: 100%;
+                                    height: 100%;
+                    }
+                    body {
                                     background-color: #000;
                                     display: flex;
                                     justify-content: center;
                                     align-items: center;
-                                    height: 100vh;
+                                    min-height: 100vh;
                                     font-family: 'Courier New', Courier, monospace;
                     }
                     #game-container {
                                     position: relative;
+                                    width: 766px;
+                                    height: 680px;
                     }
                     canvas {
                                     display: block;
                                     image-rendering: pixelated;
                     }
                     .ui-screen {
-                                    position: absolute;
+                                    position: fixed;
+                                    top: 0;
+                                    left: 0;
                                     width: 100%;
                                     height: 100%;
                                     background: rgba(0,0,0,0.85);
@@ -62,17 +74,20 @@
     </head>
     <body>
             <div id="game-container"></div>div>
+
             <div id="start-screen" class="ui-screen">
                         <h1 style="color:#e23636;">SPIDERMAN GAME</h1>h1>
                         <p>Collect all the yellow dots and avoid the villains!<br>Use arrow keys to move.</p>
                     <button onclick="startGame()">PLAY GAME</button>button>
             </div>div>
+        
         <div id="game-over-screen" class="ui-screen hidden">
                 <h1 style="color:#e23636;">GAME OVER</h1>h1>
                 <p>Spidey got caught!</p>
                 <p id="final-score"></p>
                 <button onclick="location.reload()">TRY AGAIN</button>button>
         </div>div>
+        
         <div id="win-screen" class="ui-screen hidden">
                 <h1 style="color:#f0d000;">YOU WIN!</h1>h1>
                 <p>All webs collected!</p>
