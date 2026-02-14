@@ -181,7 +181,7 @@
                 <h1 style="color:#e23636;">GAME OVER</h1>h1>
                 <p>Spidey got caught !</p>
                 <p id="final-score"></p>
-                <button onclick="location.reload()">TRY AGAIN</button>button>
+                <button onclick="startGame()">TRY AGAIN</button>button>
         </div>div>
     
         <div id="congratulations-screen" class="ui-screen hidden">
@@ -190,7 +190,7 @@
                 <img src="Assets/spiderman.png" alt="Spiderman" class="congratulations-image" style="filter: drop-shadow(0 0 10px #f0d000);">
                 <p style="font-size:20px; color:#f0d000; margin-top: 10px;">🎉 🎊 🎉</p>
                 <p id="win-score"></p>
-                <button onclick="location.reload()">PLAY AGAIN</button>button>
+                <button onclick="startGame()">PLAY AGAIN</button>button>
         </div>div>
     
         <script>
@@ -468,8 +468,10 @@
                                     gameState.gameOver = false;
                                     gameState.levelComplete = false;
                                     document.getElementById('start-screen').classList.add('hidden');
+                                    document.getElementById('game-over-screen').classList.add('hidden');
+                                    document.getElementById('congratulations-screen').classList.add('hidden');
+                                    document.getElementById('level-complete-screen').classList.add('hidden');
                                     if (!gameState.game) {
-                                        
                                                         const game = new Phaser.Game(config);
                                                         gameState.game = game;
                                     } else {
@@ -482,4 +484,4 @@
         </script></p></p>
     </body>
         </style></title>
-    </head>            Page_DownPage_Down
+    </head>
