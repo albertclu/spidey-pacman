@@ -49,6 +49,7 @@
                     h1 {
                                     font-size: 42px;
                                     margin-bottom: 10px;
+                                    animation: pulse 1.5s infinite;
                     }
                     p {
                                     font-size: 18px;
@@ -70,30 +71,54 @@
                     .hidden {
                                     display: none !important;
                     }
+                    .congratulations-image {
+                                    width: 150px;
+                                    height: 150px;
+                                    margin: 20px 0;
+                                    animation: bounce 1s infinite;
+                    }
+                    .thumbs-up {
+                                    font-size: 60px;
+                                    animation: spin 2s infinite linear;
+                    }
+                    @keyframes pulse {
+                                    0%, 100% { transform: scale(1); }
+                                    50% { transform: scale(1.1); }
+                    }
+                    @keyframes bounce {
+                                    0%, 100% { transform: translateY(0); }
+                                    50% { transform: translateY(-20px); }
+                    }
+                    @keyframes spin {
+                                    0% { transform: rotate(0deg); }
+                                    100% { transform: rotate(360deg); }
+                    }
                 </style>
     </head>
     <body>
             <div id="game-container"></div>div>
 
             <div id="start-screen" class="ui-screen">
-                        <h1 style="color:#e23636;">SPIDERMAN GAME</h1>
+                        <h1 style="color:#e23636;">SPIDERMAN GAME</h1>h1>
                         <p>Collect all the yellow dots and avoid the villains!<br>Use arrow keys to move.</p>
-                    <button onclick="startGame()">PLAY GAME</button>
+                    <button onclick="startGame()">PLAY GAME</button>button>
             </div>div>
         
         <div id="game-over-screen" class="ui-screen hidden">
-                <h1 style="color:#e23636;">GAME OVER</h1>
+                <h1 style="color:#e23636;">GAME OVER</h1>h1>
                 <p>Spidey got caught!</p>
                 <p id="final-score"></p>
-                <button onclick="location.reload()">TRY AGAIN</button>
+                <button onclick="location.reload()">TRY AGAIN</button>button>
         </div>div>
         
-        <div id="win-screen" class="ui-screen hidden">
-                <h1 style="color:#f0d000;">YOU WIN!</h1>
-                <p>You have defeated the villains!</p>
-                <p>Stay tuned for more levels!</p>
-                <p id="win-score"></p>
-                <button onclick="location.reload()">PLAY AGAIN</button>
+        <div id="congratulations-screen" class="ui-screen hidden">
+                <h1 style="color:#f0d000;">Congratulations!</h1>h1>
+                <p style="font-size:24px; margin:10px 0;">You have beaten the Spidey Pac-Man Game!!!</p>
+                <img src="Assets/spiderman.png" alt="Spiderman" class="congratulations-image" style="filter: drop-shadow(0 0 10px #e23636);">
+                <p style="font-size:20px;">🎉 <span class="thumbs-up">👍</span>span> 🎉</p>
+                <p id="win-score" style="font-size:20px; color:#f0d000; margin:20px 0;"></p>
+                <p style="font-size:18px; margin-top:30px;">Stay tuned for more levels!</p>
+                <button onclick="location.reload()">PLAY AGAIN</button>button>
         </div>div>
     
         <script>
@@ -115,7 +140,7 @@
                                     [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
                                     [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
                                     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-                                    [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+                        [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
                                     [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
                                     [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
                                     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -168,25 +193,25 @@
                                     scene: { preload, create, update }
                     };
 
-                    function preload() {
-                                    this.load.on('loaderror', () => {});
-                                    this.load.image('spiderman', 'Assets/spiderman.png');
-                                    this.load.image('kingpin', 'Assets/kingpin.png');
-                                    this.load.image('goblin', 'Assets/goblin.png');
-                                    this.load.image('doc-ock', 'Assets/doc-ock.png');
-                                    this.load.image('venom', 'Assets/venom.png');
-                                    this.load.image('wall', 'Assets/wall.png');
-                    }
+                                                                                function preload() {
+                                                                                                this.load.on('loaderror', () => {});
+                                                                                                this.load.image('spiderman', 'Assets/spiderman.png');
+                                                                                                this.load.image('kingpin', 'Assets/kingpin.png');
+                                                                                                this.load.image('goblin', 'Assets/goblin.png');
+                                                                                                this.load.image('doc-ock', 'Assets/doc-ock.png');
+                                                                                                this.load.image('venom', 'Assets/venom.png');
+                                                                                                this.load.image('wall', 'Assets/wall.png');
+                                                                                }
 
-                    function ensureTexture(scene, key, color, w, h, circle = false) {
-                                    if (scene.textures.exists(key)) return;
-                                    const g = scene.add.graphics();
-                                    g.fillStyle(color, 1);
-                                    if (circle) g.fillCircle(w / 2, h / 2, w / 2);
-                                    else g.fillRect(0, 0, w, h);
-                                    g.generateTexture(key, w, h);
-                                    g.destroy();
-                    }
+                                                                                                            function ensureTexture(scene, key, color, w, h, circle = false) {
+                                                                                                                            if (scene.textures.exists(key)) return;
+                                                                                                                            const g = scene.add.graphics();
+                                                                                                                            g.fillStyle(color, 1);
+                                                                                                                            if (circle) g.fillCircle(w / 2, h / 2, w / 2);
+                                                                                                                            else g.fillRect(0, 0, w, h);
+                                                                                                                            g.generateTexture(key, w, h);
+                                                                                                                            g.destroy();
+                                                                                                                }
 
                     function create() {
                                     ensureTexture(this, 'wall', 0x2244cc, T, T);
@@ -355,24 +380,24 @@
 
                                     advanceActor(p, PLAYER_SPEED / T, delta, playerNextDir);
 
-                                    if (p.progress < (PLAYER_SPEED / T) * delta + 0.05) {
-                                                        const key = `${p.col},${p.row}`;
-                                                        if (this.webMap[key]) {
-                                                                                this.webMap[key].destroy();
-                                                                                delete this.webMap[key];
-                                                                                score += 10;
-                                                                                scoreText.setText('Score: ' + score);
-                                                                                if (score > highScore) {
-                                                                                                            highScore = score;
-                                                                                                            highScoreText.setText('Best: ' + highScore);
-                                                                                                            localStorage.setItem('spideyHighScore', highScore);
-                                                                                    }
-                                                                                if (Object.keys(this.webMap).length === 0) {
-                                                                                                            endGame(this, true);
-                                                                                                            return;
-                                                                                    }
-                                                        }
-                                    }
+                        if (p.progress < (PLAYER_SPEED / T) * delta + 0.05) {
+                                            const key = `${p.col},${p.row}`;
+                                            if (this.webMap[key]) {
+                                            this.webMap[key].destroy();
+                                                                    delete this.webMap[key];
+                                                                    score += 10;
+                                                                    scoreText.setText('Score: ' + score);
+                                                                    if (score > highScore) {
+                                                                                                highScore = score;
+                                                                                                highScoreText.setText('Best: ' + highScore);
+                                                                                                localStorage.setItem('spideyHighScore', highScore);
+                                                                    }
+                                                                    if (Object.keys(this.webMap).length === 0) {
+                                                                                                endGame(this, true);
+                                                                                                return;
+                                                                    }
+                                            }
+                        }
 
                                     const pCol = p.col, pRow = p.row;
                                     for (const v of this.villains) {
@@ -400,7 +425,7 @@
                                     gameActive = false;
                                     if (won) {
                                                         document.getElementById('win-score').textContent = 'Score: ' + score;
-                                                        document.getElementById('win-screen').classList.remove('hidden');
+                                                        document.getElementById('congratulations-screen').classList.remove('hidden');
                                     } else {
                                                         document.getElementById('final-score').textContent = 'Score: ' + score;
                                                         document.getElementById('game-over-screen').classList.remove('hidden');
@@ -408,7 +433,7 @@
                     }
 
                     function startGame() {
-                                    document.getElementById('start-screen').classList.add('hidden');
+                        document.getElementById('start-screen').classList.add('hidden');
                                     const scene = game.scene.scenes[0];
                                     scene.villains.forEach(v => { v.moving = true; });
                                     gameActive = true;
@@ -422,6 +447,3 @@
     </body>
         </style></title>
     </head>
-
-
-
